@@ -18,3 +18,4 @@ dist/
 # Local data
 data/
 logs/
+*.bak

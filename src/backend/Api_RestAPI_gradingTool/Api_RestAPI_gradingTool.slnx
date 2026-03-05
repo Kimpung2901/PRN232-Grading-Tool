@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Api_RestAPI_gradingTool/Api_RestAPI_gradingTool.csproj" />
+  <Project Path="Application/Application.csproj" />
+  <Project Path="Domain/Domain.csproj" />
+  <Project Path="Infrastructure/Infrastructure.csproj" />
+</Solution>

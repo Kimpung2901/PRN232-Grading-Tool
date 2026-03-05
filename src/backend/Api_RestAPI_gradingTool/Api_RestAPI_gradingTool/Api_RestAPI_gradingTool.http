@@ -1,0 +1,6 @@
+@Api_RestAPI_gradingTool_HostAddress = http://localhost:5069
+
+GET {{Api_RestAPI_gradingTool_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

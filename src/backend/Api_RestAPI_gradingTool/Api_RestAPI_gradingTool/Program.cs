@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +8,18 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var connectionString = builder.Configuration.GetConnectionString("Default")
+    ?? Environment.GetEnvironmentVariable("GRADING_DB_CONNECTION");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException("Missing GRADING_DB_CONNECTION or ConnectionStrings:GradingDb.");
+}
+
+builder.Services.AddDbContext<Infrastructure.Persistence.GradingDbContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+});
 
 builder.Services.AddCors(options =>
 {

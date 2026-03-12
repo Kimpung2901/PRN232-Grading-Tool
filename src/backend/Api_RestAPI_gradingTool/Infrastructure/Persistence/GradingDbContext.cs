@@ -111,6 +111,7 @@ public partial class GradingDbContext : DbContext
                 .HasPrecision(0)
                 .HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.PostmanItemId).HasMaxLength(200);
             entity.Property(e => e.Score).HasColumnType("decimal(6, 2)");
 
             entity.HasOne(d => d.DependencyTestCase).WithMany(p => p.InverseDependencyTestCase)

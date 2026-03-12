@@ -1,0 +1,282 @@
+using Api_RestAPI_gradingTool.Contracts.Management;
+using Infrastructure;
+using Infrastructure.Persistence;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Api_RestAPI_gradingTool.Controllers.Management;
+
+[ApiController]
+[Route("api")]
+public sealed class ExamsController : ControllerBase
+{
+    private const int MaxPageSize = 100;
+    private readonly GradingDbContext _db;
+
+    public ExamsController(GradingDbContext db)
+    {
+        _db = db;
+    }
+
+    [HttpGet("exam-sessions/{sessionId:int}/exams")]
+    public async Task<ActionResult<PagedResult<ExamDto>>> ListBySession(
+        int sessionId,
+        [FromQuery] string? search,
+        [FromQuery] string? sort,
+        [FromQuery] string? order,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await _db.ExamSessions.AnyAsync(s => s.Id == sessionId, cancellationToken))
+        {
+            return NotFound(new { message = "Exam session not found." });
+        }
+
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > MaxPageSize) pageSize = MaxPageSize;
+
+        IQueryable<Exam> query = _db.Exams.AsNoTracking()
+            .Where(e => e.SessionId == sessionId);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = $"%{search.Trim()}%";
+            query = query.Where(e => EF.Functions.Like(e.Name, term));
+        }
+
+        query = ApplySort(query, sort, order);
+
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(e => new ExamDto
+            {
+                Id = e.Id,
+                SessionId = e.SessionId,
+                Name = e.Name,
+                DatabaseFilePath = e.DatabaseFilePath,
+                CollectionFilePath = e.CollectionFilePath,
+                CreatedAt = e.CreatedAt
+            })
+            .ToArrayAsync(cancellationToken);
+
+        return Ok(new PagedResult<ExamDto>
+        {
+            Page = page,
+            PageSize = pageSize,
+            Total = total,
+            Items = items
+        });
+    }
+
+    [HttpGet("exams/{id:int}")]
+    public async Task<ActionResult<ExamDto>> GetById(
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        var exam = await _db.Exams.AsNoTracking()
+            .Where(e => e.Id == id)
+            .Select(e => new ExamDto
+            {
+                Id = e.Id,
+                SessionId = e.SessionId,
+                Name = e.Name,
+                DatabaseFilePath = e.DatabaseFilePath,
+                CollectionFilePath = e.CollectionFilePath,
+                CreatedAt = e.CreatedAt
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (exam is null)
+        {
+            return NotFound(new { message = "Exam not found." });
+        }
+
+        return Ok(exam);
+    }
+
+    [HttpPost("exam-sessions/{sessionId:int}/exams")]
+    public async Task<ActionResult<ExamDto>> Create(
+        int sessionId,
+        [FromBody] CreateExamRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await _db.ExamSessions.AnyAsync(s => s.Id == sessionId, cancellationToken))
+        {
+            return NotFound(new { message = "Exam session not found." });
+        }
+
+        var nameError = ValidateName(request.Name);
+        if (nameError is not null)
+        {
+            return BadRequest(new { message = nameError });
+        }
+
+        var normalizedName = request.Name.Trim().ToLowerInvariant();
+        var nameExists = await _db.Exams
+            .AnyAsync(e => e.SessionId == sessionId && e.Name.ToLower() == normalizedName, cancellationToken);
+        if (nameExists)
+        {
+            return Conflict(new { message = "Exam name already exists in this session." });
+        }
+
+        var entity = new Exam
+        {
+            SessionId = sessionId,
+            Name = request.Name.Trim()
+        };
+
+        _db.Exams.Add(entity);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var dto = new ExamDto
+        {
+            Id = entity.Id,
+            SessionId = entity.SessionId,
+            Name = entity.Name,
+            DatabaseFilePath = entity.DatabaseFilePath,
+            CollectionFilePath = entity.CollectionFilePath,
+            CreatedAt = entity.CreatedAt
+        };
+
+        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, dto);
+    }
+
+    [HttpPut("exams/{id:int}")]
+    public async Task<ActionResult<ExamDto>> Update(
+        int id,
+        [FromBody] UpdateExamRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        if (exam is null)
+        {
+            return NotFound(new { message = "Exam not found." });
+        }
+
+        var nameError = ValidateName(request.Name);
+        if (nameError is not null)
+        {
+            return BadRequest(new { message = nameError });
+        }
+
+        var normalizedName = request.Name.Trim().ToLowerInvariant();
+        var nameExists = await _db.Exams
+            .AnyAsync(e => e.SessionId == exam.SessionId && e.Id != id && e.Name.ToLower() == normalizedName, cancellationToken);
+        if (nameExists)
+        {
+            return Conflict(new { message = "Exam name already exists in this session." });
+        }
+
+        exam.Name = request.Name.Trim();
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var dto = new ExamDto
+        {
+            Id = exam.Id,
+            SessionId = exam.SessionId,
+            Name = exam.Name,
+            DatabaseFilePath = exam.DatabaseFilePath,
+            CollectionFilePath = exam.CollectionFilePath,
+            CreatedAt = exam.CreatedAt
+        };
+
+        return Ok(dto);
+    }
+
+    [HttpPatch("exams/{id:int}")]
+    public async Task<ActionResult<ExamDto>> Patch(
+        int id,
+        [FromBody] PatchExamRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        if (exam is null)
+        {
+            return NotFound(new { message = "Exam not found." });
+        }
+
+        var newName = request.Name ?? exam.Name;
+        var nameError = ValidateName(newName);
+        if (nameError is not null)
+        {
+            return BadRequest(new { message = nameError });
+        }
+
+        var normalizedName = newName.Trim().ToLowerInvariant();
+        var nameExists = await _db.Exams
+            .AnyAsync(e => e.SessionId == exam.SessionId && e.Id != id && e.Name.ToLower() == normalizedName, cancellationToken);
+        if (nameExists)
+        {
+            return Conflict(new { message = "Exam name already exists in this session." });
+        }
+
+        exam.Name = newName.Trim();
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var dto = new ExamDto
+        {
+            Id = exam.Id,
+            SessionId = exam.SessionId,
+            Name = exam.Name,
+            DatabaseFilePath = exam.DatabaseFilePath,
+            CollectionFilePath = exam.CollectionFilePath,
+            CreatedAt = exam.CreatedAt
+        };
+
+        return Ok(dto);
+    }
+
+    [HttpDelete("exams/{id:int}")]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+    {
+        var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+        if (exam is null)
+        {
+            return NotFound(new { message = "Exam not found." });
+        }
+
+        var hasSubmissions = await _db.Submissions.AnyAsync(s => s.ExamId == id, cancellationToken);
+        var hasTestCases = await _db.TestCases.AnyAsync(t => t.ExamId == id, cancellationToken);
+        if (hasSubmissions || hasTestCases)
+        {
+            return Conflict(new { message = "Cannot delete exam with submissions or test cases." });
+        }
+
+        _db.Exams.Remove(exam);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return NoContent();
+    }
+
+    private static IQueryable<Exam> ApplySort(IQueryable<Exam> query, string? sort, string? order)
+    {
+        var isDesc = string.Equals(order, "desc", StringComparison.OrdinalIgnoreCase);
+        return (sort ?? "id").ToLowerInvariant() switch
+        {
+            "name" => isDesc ? query.OrderByDescending(e => e.Name) : query.OrderBy(e => e.Name),
+            "createdat" => isDesc ? query.OrderByDescending(e => e.CreatedAt) : query.OrderBy(e => e.CreatedAt),
+            "id" => isDesc ? query.OrderByDescending(e => e.Id) : query.OrderBy(e => e.Id),
+            _ => isDesc ? query.OrderByDescending(e => e.Id) : query.OrderBy(e => e.Id)
+        };
+    }
+
+    private static string? ValidateName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "Name is required.";
+        }
+
+        var trimmed = name.Trim();
+        if (trimmed.Length < 3 || trimmed.Length > 200)
+        {
+            return "Name length must be between 3 and 200.";
+        }
+
+        return null;
+    }
+}

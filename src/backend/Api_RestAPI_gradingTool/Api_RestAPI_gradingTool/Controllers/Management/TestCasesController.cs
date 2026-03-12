@@ -111,6 +111,11 @@ public sealed class TestCasesController : ControllerBase
         var validationError = await ValidateRequest(examId, request.Name, request.PostmanItemId, request.Score, request.DependencyTestCaseId, null, cancellationToken);
         if (validationError is not null)
         {
+            if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return Conflict(new { message = validationError });
+            }
+
             return BadRequest(new { message = validationError });
         }
 
@@ -156,6 +161,11 @@ public sealed class TestCasesController : ControllerBase
         var validationError = await ValidateRequest(examId, request.Name, request.PostmanItemId, request.Score, request.DependencyTestCaseId, id, cancellationToken);
         if (validationError is not null)
         {
+            if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return Conflict(new { message = validationError });
+            }
+
             return BadRequest(new { message = validationError });
         }
 
@@ -209,6 +219,11 @@ public sealed class TestCasesController : ControllerBase
 
         if (validationError is not null)
         {
+            if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return Conflict(new { message = validationError });
+            }
+
             return BadRequest(new { message = validationError });
         }
 
@@ -283,14 +298,39 @@ public sealed class TestCasesController : ControllerBase
             return "Name is required.";
         }
 
+        var trimmedName = name.Trim();
+        if (trimmedName.Length < 3 || trimmedName.Length > 200)
+        {
+            return "Name length must be between 3 and 200.";
+        }
+
         if (string.IsNullOrWhiteSpace(postmanItemId))
         {
             return "PostmanItemId is required.";
         }
 
+        var trimmedPostmanItemId = postmanItemId.Trim();
+        if (trimmedPostmanItemId.Length < 1 || trimmedPostmanItemId.Length > 200)
+        {
+            return "PostmanItemId length must be between 1 and 200.";
+        }
+
         if (score < 0)
         {
             return "Score must be >= 0.";
+        }
+
+        var normalizedName = trimmedName.ToLowerInvariant();
+        IQueryable<TestCase> nameQuery = _db.TestCases.Where(t => t.ExamId == examId && t.Name.ToLower() == normalizedName);
+        if (currentTestCaseId.HasValue)
+        {
+            nameQuery = nameQuery.Where(t => t.Id != currentTestCaseId.Value);
+        }
+
+        var nameExists = await nameQuery.AnyAsync(cancellationToken);
+        if (nameExists)
+        {
+            return "TestCase name already exists in this exam.";
         }
 
         if (dependencyTestCaseId.HasValue)

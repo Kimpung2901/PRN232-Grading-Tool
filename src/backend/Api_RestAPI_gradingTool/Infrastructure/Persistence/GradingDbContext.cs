@@ -16,8 +16,6 @@ public partial class GradingDbContext : DbContext
     {
     }
 
-    public virtual DbSet<EndpointSpec> EndpointSpecs { get; set; }
-
     public virtual DbSet<Exam> Exams { get; set; }
 
     public virtual DbSet<ExamSession> ExamSessions { get; set; }
@@ -46,21 +44,6 @@ public partial class GradingDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<EndpointSpec>(entity =>
-        {
-            entity.HasIndex(e => e.ExamId, "IX_EndpointSpecs_ExamId");
-
-            entity.Property(e => e.CreatedAt)
-                .HasPrecision(0)
-                .HasDefaultValueSql("(sysutcdatetime())");
-            entity.Property(e => e.Method).HasMaxLength(10);
-            entity.Property(e => e.Url).HasMaxLength(300);
-
-            entity.HasOne(d => d.Exam).WithMany(p => p.EndpointSpecs)
-                .HasForeignKey(d => d.ExamId)
-                .HasConstraintName("FK_EndpointSpecs_Exams");
-        });
-
         modelBuilder.Entity<Exam>(entity =>
         {
             entity.HasIndex(e => e.SessionId, "IX_Exams_SessionId");

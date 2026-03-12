@@ -3,12 +3,12 @@ using Infrastructure;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Api_RestAPI_gradingTool.Validation;
 
 namespace Api_RestAPI_gradingTool.Controllers.Management;
 
-[ApiController]
 [Route("api")]
-public sealed class ExamsController : ControllerBase
+public sealed class ExamsController : ApiControllerBase
 {
     private const int MaxPageSize = 100;
     private readonly GradingDbContext _db;
@@ -30,7 +30,7 @@ public sealed class ExamsController : ControllerBase
     {
         if (!await _db.ExamSessions.AnyAsync(s => s.Id == sessionId, cancellationToken))
         {
-            return NotFound(new { message = "Exam session not found." });
+            return ProblemNotFound("Exam session not found.");
         }
 
         if (page < 1) page = 1;
@@ -86,13 +86,15 @@ public sealed class ExamsController : ControllerBase
                 Name = e.Name,
                 DatabaseFilePath = e.DatabaseFilePath,
                 CollectionFilePath = e.CollectionFilePath,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                TestCasesCount = e.TestCases.Count,
+                SubmissionsCount = e.Submissions.Count
             })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (exam is null)
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
         return Ok(exam);
@@ -106,13 +108,13 @@ public sealed class ExamsController : ControllerBase
     {
         if (!await _db.ExamSessions.AnyAsync(s => s.Id == sessionId, cancellationToken))
         {
-            return NotFound(new { message = "Exam session not found." });
+            return ProblemNotFound("Exam session not found.");
         }
 
-        var nameError = ValidateName(request.Name);
+        var nameError = NameRules.Validate(request.Name, 3, 200);
         if (nameError is not null)
         {
-            return BadRequest(new { message = nameError });
+            return ProblemBadRequest(nameError);
         }
 
         var normalizedName = request.Name.Trim().ToLowerInvariant();
@@ -120,7 +122,7 @@ public sealed class ExamsController : ControllerBase
             .AnyAsync(e => e.SessionId == sessionId && e.Name.ToLower() == normalizedName, cancellationToken);
         if (nameExists)
         {
-            return Conflict(new { message = "Exam name already exists in this session." });
+            return ProblemConflict("Exam name already exists in this session.");
         }
 
         var entity = new Exam
@@ -154,13 +156,13 @@ public sealed class ExamsController : ControllerBase
         var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         if (exam is null)
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
-        var nameError = ValidateName(request.Name);
+        var nameError = NameRules.Validate(request.Name, 3, 200);
         if (nameError is not null)
         {
-            return BadRequest(new { message = nameError });
+            return ProblemBadRequest(nameError);
         }
 
         var normalizedName = request.Name.Trim().ToLowerInvariant();
@@ -168,7 +170,7 @@ public sealed class ExamsController : ControllerBase
             .AnyAsync(e => e.SessionId == exam.SessionId && e.Id != id && e.Name.ToLower() == normalizedName, cancellationToken);
         if (nameExists)
         {
-            return Conflict(new { message = "Exam name already exists in this session." });
+            return ProblemConflict("Exam name already exists in this session.");
         }
 
         exam.Name = request.Name.Trim();
@@ -196,14 +198,14 @@ public sealed class ExamsController : ControllerBase
         var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         if (exam is null)
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
         var newName = request.Name ?? exam.Name;
-        var nameError = ValidateName(newName);
+        var nameError = NameRules.Validate(newName, 3, 200);
         if (nameError is not null)
         {
-            return BadRequest(new { message = nameError });
+            return ProblemBadRequest(nameError);
         }
 
         var normalizedName = newName.Trim().ToLowerInvariant();
@@ -211,7 +213,7 @@ public sealed class ExamsController : ControllerBase
             .AnyAsync(e => e.SessionId == exam.SessionId && e.Id != id && e.Name.ToLower() == normalizedName, cancellationToken);
         if (nameExists)
         {
-            return Conflict(new { message = "Exam name already exists in this session." });
+            return ProblemConflict("Exam name already exists in this session.");
         }
 
         exam.Name = newName.Trim();
@@ -236,14 +238,14 @@ public sealed class ExamsController : ControllerBase
         var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
         if (exam is null)
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
         var hasSubmissions = await _db.Submissions.AnyAsync(s => s.ExamId == id, cancellationToken);
         var hasTestCases = await _db.TestCases.AnyAsync(t => t.ExamId == id, cancellationToken);
         if (hasSubmissions || hasTestCases)
         {
-            return Conflict(new { message = "Cannot delete exam with submissions or test cases." });
+            return ProblemConflict("Cannot delete exam with submissions or test cases.");
         }
 
         _db.Exams.Remove(exam);
@@ -264,19 +266,4 @@ public sealed class ExamsController : ControllerBase
         };
     }
 
-    private static string? ValidateName(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return "Name is required.";
-        }
-
-        var trimmed = name.Trim();
-        if (trimmed.Length < 3 || trimmed.Length > 200)
-        {
-            return "Name length must be between 3 and 200.";
-        }
-
-        return null;
-    }
 }

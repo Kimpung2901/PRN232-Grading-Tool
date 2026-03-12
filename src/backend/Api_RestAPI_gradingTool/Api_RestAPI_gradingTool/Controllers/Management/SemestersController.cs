@@ -3,12 +3,12 @@ using Infrastructure;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Api_RestAPI_gradingTool.Validation;
 
 namespace Api_RestAPI_gradingTool.Controllers.Management;
 
-[ApiController]
 [Route("api/semesters")]
-public sealed class SemestersController : ControllerBase
+public sealed class SemestersController : ApiControllerBase
 {
     private const int MaxPageSize = 100;
     private readonly GradingDbContext _db;
@@ -81,7 +81,7 @@ public sealed class SemestersController : ControllerBase
 
         if (semester is null)
         {
-            return NotFound(new { message = "Semester not found." });
+            return ProblemNotFound("Semester not found.");
         }
 
         return Ok(semester);
@@ -92,16 +92,16 @@ public sealed class SemestersController : ControllerBase
         [FromBody] CreateSemesterRequest request,
         CancellationToken cancellationToken = default)
     {
-        var nameError = ValidateName(request.Name);
+        var nameError = NameRules.Validate(request.Name, 3, 100);
         if (nameError is not null)
         {
-            return BadRequest(new { message = nameError });
+            return ProblemBadRequest(nameError);
         }
 
         var validationError = ValidateDates(request.StartDate, request.EndDate);
         if (validationError is not null)
         {
-            return BadRequest(new { message = validationError });
+            return ProblemBadRequest(validationError);
         }
 
         var normalizedName = request.Name.Trim().ToLowerInvariant();
@@ -109,7 +109,7 @@ public sealed class SemestersController : ControllerBase
             .AnyAsync(s => s.Name.ToLower() == normalizedName, cancellationToken);
         if (nameExists)
         {
-            return Conflict(new { message = "Semester name already exists." });
+            return ProblemConflict("Semester name already exists.");
         }
 
         var entity = new Semester
@@ -143,19 +143,19 @@ public sealed class SemestersController : ControllerBase
         var semester = await _db.Semesters.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         if (semester is null)
         {
-            return NotFound(new { message = "Semester not found." });
+            return ProblemNotFound("Semester not found.");
         }
 
-        var nameError = ValidateName(request.Name);
+        var nameError = NameRules.Validate(request.Name, 3, 100);
         if (nameError is not null)
         {
-            return BadRequest(new { message = nameError });
+            return ProblemBadRequest(nameError);
         }
 
         var validationError = ValidateDates(request.StartDate, request.EndDate);
         if (validationError is not null)
         {
-            return BadRequest(new { message = validationError });
+            return ProblemBadRequest(validationError);
         }
 
         var normalizedName = request.Name.Trim().ToLowerInvariant();
@@ -163,7 +163,7 @@ public sealed class SemestersController : ControllerBase
             .AnyAsync(s => s.Id != id && s.Name.ToLower() == normalizedName, cancellationToken);
         if (nameExists)
         {
-            return Conflict(new { message = "Semester name already exists." });
+            return ProblemConflict("Semester name already exists.");
         }
 
         semester.Name = request.Name.Trim();
@@ -193,14 +193,14 @@ public sealed class SemestersController : ControllerBase
         var semester = await _db.Semesters.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         if (semester is null)
         {
-            return NotFound(new { message = "Semester not found." });
+            return ProblemNotFound("Semester not found.");
         }
 
         var newName = request.Name ?? semester.Name;
-        var nameError = ValidateName(newName);
+        var nameError = NameRules.Validate(newName, 3, 100);
         if (nameError is not null)
         {
-            return BadRequest(new { message = nameError });
+            return ProblemBadRequest(nameError);
         }
 
         var newStart = request.StartDate ?? semester.StartDate;
@@ -208,7 +208,7 @@ public sealed class SemestersController : ControllerBase
         var validationError = ValidateDates(newStart, newEnd);
         if (validationError is not null)
         {
-            return BadRequest(new { message = validationError });
+            return ProblemBadRequest(validationError);
         }
 
         var normalizedName = newName.Trim().ToLowerInvariant();
@@ -216,7 +216,7 @@ public sealed class SemestersController : ControllerBase
             .AnyAsync(s => s.Id != id && s.Name.ToLower() == normalizedName, cancellationToken);
         if (nameExists)
         {
-            return Conflict(new { message = "Semester name already exists." });
+            return ProblemConflict("Semester name already exists.");
         }
 
         semester.Name = newName.Trim();
@@ -243,13 +243,13 @@ public sealed class SemestersController : ControllerBase
         var semester = await _db.Semesters.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         if (semester is null)
         {
-            return NotFound(new { message = "Semester not found." });
+            return ProblemNotFound("Semester not found.");
         }
 
         var hasSessions = await _db.ExamSessions.AnyAsync(s => s.SemesterId == id, cancellationToken);
         if (hasSessions)
         {
-            return Conflict(new { message = "Cannot delete semester with exam sessions." });
+            return ProblemConflict("Cannot delete semester with exam sessions.");
         }
 
         _db.Semesters.Remove(semester);
@@ -263,22 +263,6 @@ public sealed class SemestersController : ControllerBase
         if (start.HasValue && end.HasValue && end.Value < start.Value)
         {
             return "EndDate must be >= StartDate.";
-        }
-
-        return null;
-    }
-
-    private static string? ValidateName(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return "Name is required.";
-        }
-
-        var trimmed = name.Trim();
-        if (trimmed.Length < 3 || trimmed.Length > 100)
-        {
-            return "Name length must be between 3 and 100.";
         }
 
         return null;

@@ -3,12 +3,12 @@ using Infrastructure;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Api_RestAPI_gradingTool.Validation;
 
 namespace Api_RestAPI_gradingTool.Controllers.Management;
 
-[ApiController]
 [Route("api/exams/{examId:int}/testcases")]
-public sealed class TestCasesController : ControllerBase
+public sealed class TestCasesController : ApiControllerBase
 {
     private const int MaxPageSize = 100;
     private readonly GradingDbContext _db;
@@ -30,7 +30,7 @@ public sealed class TestCasesController : ControllerBase
     {
         if (!await _db.Exams.AnyAsync(e => e.Id == examId, cancellationToken))
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
         if (page < 1) page = 1;
@@ -96,7 +96,7 @@ public sealed class TestCasesController : ControllerBase
 
         if (entity is null)
         {
-            return NotFound(new { message = "TestCase not found." });
+            return ProblemNotFound("TestCase not found.");
         }
 
         return Ok(entity);
@@ -113,10 +113,20 @@ public sealed class TestCasesController : ControllerBase
         {
             if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase))
             {
-                return Conflict(new { message = validationError });
+                return ProblemConflict(validationError);
+            }
+            if (validationError.StartsWith("PostmanItemId already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return ProblemConflict(validationError);
             }
 
-            return BadRequest(new { message = validationError });
+            if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase)
+                || validationError.StartsWith("PostmanItemId already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return ProblemConflict(validationError);
+            }
+
+            return ProblemBadRequest(validationError);
         }
 
         var entity = new TestCase
@@ -155,7 +165,7 @@ public sealed class TestCasesController : ControllerBase
         var entity = await _db.TestCases.FirstOrDefaultAsync(t => t.ExamId == examId && t.Id == id, cancellationToken);
         if (entity is null)
         {
-            return NotFound(new { message = "TestCase not found." });
+            return ProblemNotFound("TestCase not found.");
         }
 
         var validationError = await ValidateRequest(examId, request.Name, request.PostmanItemId, request.Score, request.DependencyTestCaseId, id, cancellationToken);
@@ -163,10 +173,20 @@ public sealed class TestCasesController : ControllerBase
         {
             if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase))
             {
-                return Conflict(new { message = validationError });
+                return ProblemConflict(validationError);
+            }
+            if (validationError.StartsWith("PostmanItemId already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return ProblemConflict(validationError);
             }
 
-            return BadRequest(new { message = validationError });
+            if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase)
+                || validationError.StartsWith("PostmanItemId already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return ProblemConflict(validationError);
+            }
+
+            return ProblemBadRequest(validationError);
         }
 
         entity.Name = request.Name.Trim();
@@ -200,7 +220,7 @@ public sealed class TestCasesController : ControllerBase
         var entity = await _db.TestCases.FirstOrDefaultAsync(t => t.ExamId == examId && t.Id == id, cancellationToken);
         if (entity is null)
         {
-            return NotFound(new { message = "TestCase not found." });
+            return ProblemNotFound("TestCase not found.");
         }
 
         var newName = request.Name ?? entity.Name;
@@ -221,10 +241,20 @@ public sealed class TestCasesController : ControllerBase
         {
             if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase))
             {
-                return Conflict(new { message = validationError });
+                return ProblemConflict(validationError);
+            }
+            if (validationError.StartsWith("PostmanItemId already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return ProblemConflict(validationError);
             }
 
-            return BadRequest(new { message = validationError });
+            if (validationError.StartsWith("TestCase name already exists", StringComparison.OrdinalIgnoreCase)
+                || validationError.StartsWith("PostmanItemId already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                return ProblemConflict(validationError);
+            }
+
+            return ProblemBadRequest(validationError);
         }
 
         entity.Name = newName.Trim();
@@ -257,7 +287,7 @@ public sealed class TestCasesController : ControllerBase
         var entity = await _db.TestCases.FirstOrDefaultAsync(t => t.ExamId == examId && t.Id == id, cancellationToken);
         if (entity is null)
         {
-            return NotFound(new { message = "TestCase not found." });
+            return ProblemNotFound("TestCase not found.");
         }
 
         _db.TestCases.Remove(entity);
@@ -293,16 +323,13 @@ public sealed class TestCasesController : ControllerBase
             return "Exam not found.";
         }
 
-        if (string.IsNullOrWhiteSpace(name))
+        var nameError = NameRules.Validate(name, 3, 200);
+        if (nameError is not null)
         {
-            return "Name is required.";
+            return nameError;
         }
 
         var trimmedName = name.Trim();
-        if (trimmedName.Length < 3 || trimmedName.Length > 200)
-        {
-            return "Name length must be between 3 and 200.";
-        }
 
         if (string.IsNullOrWhiteSpace(postmanItemId))
         {
@@ -331,6 +358,20 @@ public sealed class TestCasesController : ControllerBase
         if (nameExists)
         {
             return "TestCase name already exists in this exam.";
+        }
+
+        var normalizedPostmanItemId = trimmedPostmanItemId.ToLowerInvariant();
+        IQueryable<TestCase> postmanQuery = _db.TestCases
+            .Where(t => t.ExamId == examId && t.PostmanItemId.ToLower() == normalizedPostmanItemId);
+        if (currentTestCaseId.HasValue)
+        {
+            postmanQuery = postmanQuery.Where(t => t.Id != currentTestCaseId.Value);
+        }
+
+        var postmanExists = await postmanQuery.AnyAsync(cancellationToken);
+        if (postmanExists)
+        {
+            return "PostmanItemId already exists in this exam.";
         }
 
         if (dependencyTestCaseId.HasValue)

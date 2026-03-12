@@ -10,6 +10,8 @@ public sealed class ExamDto
     public string? DatabaseFilePath { get; set; }
     public string? CollectionFilePath { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int? TestCasesCount { get; set; }
+    public int? SubmissionsCount { get; set; }
 }
 
 public sealed class CreateExamRequest

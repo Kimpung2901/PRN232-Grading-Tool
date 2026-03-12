@@ -6,9 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api_RestAPI_gradingTool.Controllers.Management;
 
-[ApiController]
 [Route("api/exams")]
-public sealed class ExamResourcesController : ControllerBase
+public sealed class ExamResourcesController : ApiControllerBase
 {
     private const long MaxCollectionSizeBytes = 10 * 1024 * 1024;
     private const long MaxDatabaseSizeBytes = 200 * 1024 * 1024;
@@ -99,12 +98,12 @@ public sealed class ExamResourcesController : ControllerBase
         var exam = await _db.Exams.AsNoTracking().FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
         if (exam is null)
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
         if (string.IsNullOrWhiteSpace(exam.CollectionFilePath))
         {
-            return NotFound(new { message = "Resources not found." });
+            return ProblemNotFound("Resources not found.");
         }
 
         return Ok(new ExamResourceDto
@@ -124,7 +123,7 @@ public sealed class ExamResourcesController : ControllerBase
         var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
         if (exam is null)
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
         if (!string.IsNullOrWhiteSpace(exam.CollectionFilePath) && System.IO.File.Exists(exam.CollectionFilePath))
@@ -153,36 +152,36 @@ public sealed class ExamResourcesController : ControllerBase
     {
         if (collection is null || collection.Length == 0)
         {
-            return BadRequest(new { message = "collection.json is required." });
+            return ProblemBadRequest("collection.json is required.");
         }
 
         if (!HasExtension(collection.FileName, ".json"))
         {
-            return BadRequest(new { message = "collection must be a .json file." });
+            return ProblemBadRequest("collection must be a .json file.");
         }
 
         if (collection.Length > MaxCollectionSizeBytes)
         {
-            return BadRequest(new { message = "collection.json is too large." });
+            return ProblemBadRequest("collection.json is too large.");
         }
 
         if (database is not null)
         {
             if (!HasExtension(database.FileName, ".sql"))
             {
-                return BadRequest(new { message = "database must be a .sql file." });
+                return ProblemBadRequest("database must be a .sql file.");
             }
 
             if (database.Length > MaxDatabaseSizeBytes)
             {
-                return BadRequest(new { message = "database.sql is too large." });
+                return ProblemBadRequest("database.sql is too large.");
             }
         }
 
         var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
         if (exam is null)
         {
-            return NotFound(new { message = "Exam not found." });
+            return ProblemNotFound("Exam not found.");
         }
 
         var dataRoot = Path.Combine(_env.ContentRootPath, "data", "exams", examId.ToString());

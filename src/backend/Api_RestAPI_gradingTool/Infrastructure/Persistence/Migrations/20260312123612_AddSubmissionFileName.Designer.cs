@@ -4,6 +4,7 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(GradingDbContext))]
-    partial class GradingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260312123612_AddSubmissionFileName")]
+    partial class AddSubmissionFileName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,9 +59,6 @@ namespace Infrastructure.Persistence.Migrations
 
                     b.HasIndex(new[] { "SessionId" }, "IX_Exams_SessionId");
 
-                    b.HasIndex(new[] { "SessionId", "Name" }, "UQ_Exams_Session_Name")
-                        .IsUnique();
-
                     b.ToTable("Exams");
                 });
 
@@ -87,9 +87,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "SemesterId" }, "IX_ExamSessions_SemesterId");
-
-                    b.HasIndex(new[] { "SemesterId", "Name" }, "UQ_ExamSessions_Semester_Name")
-                        .IsUnique();
 
                     b.ToTable("ExamSessions");
                 });
@@ -120,9 +117,6 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("date");
 
                     b.HasKey("Id");
-
-                    b.HasIndex(new[] { "Name" }, "UQ_Semesters_Name")
-                        .IsUnique();
 
                     b.ToTable("Semesters");
                 });
@@ -216,12 +210,6 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex(new[] { "DependencyTestCaseId" }, "IX_TestCases_DependencyTestCaseId");
 
                     b.HasIndex(new[] { "ExamId" }, "IX_TestCases_ExamId");
-
-                    b.HasIndex(new[] { "ExamId", "Name" }, "UQ_TestCases_Exam_Name")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "ExamId", "PostmanItemId" }, "UQ_TestCases_Exam_PostmanItemId")
-                        .IsUnique();
 
                     b.ToTable("TestCases");
                 });

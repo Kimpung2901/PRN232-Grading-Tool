@@ -47,6 +47,7 @@ public partial class GradingDbContext : DbContext
         modelBuilder.Entity<Exam>(entity =>
         {
             entity.HasIndex(e => e.SessionId, "IX_Exams_SessionId");
+            entity.HasIndex(e => new { e.SessionId, e.Name }, "UQ_Exams_Session_Name").IsUnique();
 
             entity.Property(e => e.CollectionFilePath).HasMaxLength(500);
             entity.Property(e => e.CreatedAt)
@@ -63,6 +64,7 @@ public partial class GradingDbContext : DbContext
         modelBuilder.Entity<ExamSession>(entity =>
         {
             entity.HasIndex(e => e.SemesterId, "IX_ExamSessions_SemesterId");
+            entity.HasIndex(e => new { e.SemesterId, e.Name }, "UQ_ExamSessions_Semester_Name").IsUnique();
 
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
@@ -76,6 +78,7 @@ public partial class GradingDbContext : DbContext
 
         modelBuilder.Entity<Semester>(entity =>
         {
+            entity.HasIndex(e => e.Name, "UQ_Semesters_Name").IsUnique();
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)
                 .HasDefaultValueSql("(sysutcdatetime())");
@@ -89,6 +92,7 @@ public partial class GradingDbContext : DbContext
             entity.HasIndex(e => e.Status, "IX_Submissions_Status");
 
             entity.Property(e => e.FilePath).HasMaxLength(500);
+            entity.Property(e => e.FileName).HasMaxLength(255);
             entity.Property(e => e.LastError).HasMaxLength(2000);
             entity.Property(e => e.StudentName).HasMaxLength(200);
             entity.Property(e => e.SubmittedAt)
@@ -106,6 +110,8 @@ public partial class GradingDbContext : DbContext
             entity.HasIndex(e => e.DependencyTestCaseId, "IX_TestCases_DependencyTestCaseId");
 
             entity.HasIndex(e => e.ExamId, "IX_TestCases_ExamId");
+            entity.HasIndex(e => new { e.ExamId, e.Name }, "UQ_TestCases_Exam_Name").IsUnique();
+            entity.HasIndex(e => new { e.ExamId, e.PostmanItemId }, "UQ_TestCases_Exam_PostmanItemId").IsUnique();
 
             entity.Property(e => e.CreatedAt)
                 .HasPrecision(0)

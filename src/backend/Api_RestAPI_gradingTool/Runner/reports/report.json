@@ -1,0 +1,791 @@
+{
+  "collection": {
+    "_": {
+      "postman_id": "7d0f49f1-4c31-4e4f-ae83-7d4d33c4b11a"
+    },
+    "item": [
+      {
+        "id": "acfcc858-2d02-43a6-8375-04ecf5f0c4a6",
+        "name": "Health Check",
+        "request": {
+          "url": {
+            "path": [
+              "health"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "466412e1-5e0a-41c2-93fc-25faef8a343a",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Health status is 200', function () {",
+                "  pm.response.to.have.status(200);",
+                "});",
+                "pm.test('Health payload says ok', function () {",
+                "  var body = pm.response.json();",
+                "  pm.expect(body.status).to.eql('ok');",
+                "});"
+              ],
+              "_lastExecutionId": "e2155bfe-9b47-48ce-a7c4-fbf617729f50"
+            }
+          }
+        ]
+      },
+      {
+        "id": "3790fffe-dc3a-45d0-bcfc-61fc01881db6",
+        "name": "Create Product",
+        "request": {
+          "url": {
+            "path": [
+              "products"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"Name\": \"Notebook\",\n  \"Price\": 25.5\n}"
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "5af4271c-987d-44c8-8bfa-48c1c5a42ca2",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Create Product returns 201', function () {",
+                "  pm.response.to.have.status(201);",
+                "});",
+                "var body = pm.response.json();",
+                "pm.collectionVariables.set('productId', body.Id);",
+                "pm.test('Created product has an id', function () {",
+                "  pm.expect(body.Id).to.be.a('number');",
+                "});"
+              ],
+              "_lastExecutionId": "f4b726d8-a8a2-4a65-b82b-b57ab271822b"
+            }
+          }
+        ]
+      },
+      {
+        "id": "afc07b2b-ceb1-486a-b8ae-b53b9a55f1f9",
+        "name": "Get Product",
+        "request": {
+          "url": {
+            "path": [
+              "products",
+              "{{productId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "75d89ebc-bcd3-4c97-b0cc-9f77366f0e09",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Get Product returns 200', function () {",
+                "  pm.response.to.have.status(200);",
+                "});",
+                "pm.test('Returned product is Notebook', function () {",
+                "  var body = pm.response.json();",
+                "  pm.expect(body.Name).to.eql('Notebook');",
+                "  pm.expect(body.Price).to.eql(25.5);",
+                "});"
+              ],
+              "_lastExecutionId": "84e8d36f-6cc2-4f45-9907-72dfd4df04a8"
+            }
+          }
+        ]
+      }
+    ],
+    "event": [],
+    "variable": [
+      {
+        "type": "any",
+        "value": "http://127.0.0.1:5000",
+        "key": "baseUrl"
+      },
+      {
+        "type": "any",
+        "value": "",
+        "key": "productId"
+      }
+    ],
+    "info": {
+      "_postman_id": "7d0f49f1-4c31-4e4f-ae83-7d4d33c4b11a",
+      "name": "Simple API Grading Collection",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    }
+  },
+  "environment": {
+    "id": "b417d2d6-675a-4219-acc6-928502f5657e",
+    "values": []
+  },
+  "globals": {
+    "id": "452c3875-3e45-405a-aa97-7f7218561422",
+    "values": []
+  },
+  "run": {
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 3,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 3,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 3,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 3,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 3,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 6,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 3,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 0,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "timings": {
+      "responseAverage": 26.666666666666668,
+      "responseMin": 7,
+      "responseMax": 48,
+      "responseSd": 16.77961726487096,
+      "dnsAverage": 0,
+      "dnsMin": 0,
+      "dnsMax": 0,
+      "dnsSd": 0,
+      "firstByteAverage": 0,
+      "firstByteMin": 0,
+      "firstByteMax": 0,
+      "firstByteSd": 0,
+      "started": 1773747977676,
+      "completed": 1773747977986
+    },
+    "executions": [
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 3,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "f650ae71-4880-4c68-8c04-9a3d942296ee",
+          "httpRequestId": "2aace2db-09c6-42b4-978b-0b683769fb54"
+        },
+        "item": {
+          "id": "acfcc858-2d02-43a6-8375-04ecf5f0c4a6",
+          "name": "Health Check",
+          "request": {
+            "url": {
+              "path": [
+                "health"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "466412e1-5e0a-41c2-93fc-25faef8a343a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Health status is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Health payload says ok', function () {",
+                  "  var body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql('ok');",
+                  "});"
+                ],
+                "_lastExecutionId": "e2155bfe-9b47-48ce-a7c4-fbf617729f50"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "health"
+            ],
+            "host": [
+              "127",
+              "0",
+              "0",
+              "1"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "14e02848-e105-4a19-ac44-a47c574654f1",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "127.0.0.1:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "cfd656f6-4891-4449-b9f8-c0d78ddb11e1",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 17 Mar 2026 11:46:17 GMT"
+            },
+            {
+              "key": "Server",
+              "value": "Kestrel"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              115,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              111,
+              107,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 48,
+          "responseSize": 15
+        },
+        "id": "acfcc858-2d02-43a6-8375-04ecf5f0c4a6",
+        "assertions": [
+          {
+            "assertion": "Health status is 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Health payload says ok",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "caf85a9f-6548-4f4b-9598-85163bda1998",
+          "length": 3,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "6a7a57c5-96de-4017-94a3-977af368e54d"
+        },
+        "item": {
+          "id": "3790fffe-dc3a-45d0-bcfc-61fc01881db6",
+          "name": "Create Product",
+          "request": {
+            "url": {
+              "path": [
+                "products"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"Name\": \"Notebook\",\n  \"Price\": 25.5\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "5af4271c-987d-44c8-8bfa-48c1c5a42ca2",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create Product returns 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "var body = pm.response.json();",
+                  "pm.collectionVariables.set('productId', body.Id);",
+                  "pm.test('Created product has an id', function () {",
+                  "  pm.expect(body.Id).to.be.a('number');",
+                  "});"
+                ],
+                "_lastExecutionId": "f4b726d8-a8a2-4a65-b82b-b57ab271822b"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "products"
+            ],
+            "host": [
+              "127",
+              "0",
+              "0",
+              "1"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "e09470c7-7e0e-485e-ae38-088ce853a955",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "127.0.0.1:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "41",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"Name\": \"Notebook\",\n  \"Price\": 25.5\n}"
+          }
+        },
+        "response": {
+          "id": "688053ad-ad12-45d3-9014-00a16652e4e1",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 17 Mar 2026 11:46:17 GMT"
+            },
+            {
+              "key": "Server",
+              "value": "Kestrel"
+            },
+            {
+              "key": "Location",
+              "value": "/products/1"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              73,
+              100,
+              34,
+              58,
+              49,
+              44,
+              34,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              78,
+              111,
+              116,
+              101,
+              98,
+              111,
+              111,
+              107,
+              34,
+              44,
+              34,
+              80,
+              114,
+              105,
+              99,
+              101,
+              34,
+              58,
+              50,
+              53,
+              46,
+              53,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 25,
+          "responseSize": 39
+        },
+        "id": "3790fffe-dc3a-45d0-bcfc-61fc01881db6",
+        "assertions": [
+          {
+            "assertion": "Create Product returns 201",
+            "skipped": false
+          },
+          {
+            "assertion": "Created product has an id",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "8c0205fb-b04c-4691-8807-8b25110bd5dc",
+          "length": 3,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "43a9425b-68cd-4b1f-9b56-15eea37c387c"
+        },
+        "item": {
+          "id": "afc07b2b-ceb1-486a-b8ae-b53b9a55f1f9",
+          "name": "Get Product",
+          "request": {
+            "url": {
+              "path": [
+                "products",
+                "{{productId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "75d89ebc-bcd3-4c97-b0cc-9f77366f0e09",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get Product returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returned product is Notebook', function () {",
+                  "  var body = pm.response.json();",
+                  "  pm.expect(body.Name).to.eql('Notebook');",
+                  "  pm.expect(body.Price).to.eql(25.5);",
+                  "});"
+                ],
+                "_lastExecutionId": "84e8d36f-6cc2-4f45-9907-72dfd4df04a8"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "products",
+              "1"
+            ],
+            "host": [
+              "127",
+              "0",
+              "0",
+              "1"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "11147b83-fe24-4e22-b5ca-280d7a9d0512",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "127.0.0.1:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "7f02cd02-d35c-4af9-b0a3-d970f62b5081",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 17 Mar 2026 11:46:17 GMT"
+            },
+            {
+              "key": "Server",
+              "value": "Kestrel"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              73,
+              100,
+              34,
+              58,
+              49,
+              44,
+              34,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              78,
+              111,
+              116,
+              101,
+              98,
+              111,
+              111,
+              107,
+              34,
+              44,
+              34,
+              80,
+              114,
+              105,
+              99,
+              101,
+              34,
+              58,
+              50,
+              53,
+              46,
+              53,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 7,
+          "responseSize": 39
+        },
+        "id": "afc07b2b-ceb1-486a-b8ae-b53b9a55f1f9",
+        "assertions": [
+          {
+            "assertion": "Get Product returns 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Returned product is Notebook",
+            "skipped": false
+          }
+        ]
+      }
+    ],
+    "transfers": {
+      "responseTotal": 93
+    },
+    "failures": [],
+    "error": null
+  }
+}

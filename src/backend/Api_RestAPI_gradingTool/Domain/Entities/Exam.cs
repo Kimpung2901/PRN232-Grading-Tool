@@ -17,8 +17,6 @@ public partial class Exam
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual ICollection<EndpointSpec> EndpointSpecs { get; set; } = new List<EndpointSpec>();
-
     public virtual ExamSession Session { get; set; } = null!;
 
     public virtual ICollection<Submission> Submissions { get; set; } = new List<Submission>();

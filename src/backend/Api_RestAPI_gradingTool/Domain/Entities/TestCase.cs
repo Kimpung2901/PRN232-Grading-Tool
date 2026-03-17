@@ -11,7 +11,7 @@ public partial class TestCase
 
     public string Name { get; set; } = null!;
 
-    public string ScriptContent { get; set; } = null!;
+    public string PostmanItemId { get; set; } = null!;
 
     public decimal Score { get; set; }
 

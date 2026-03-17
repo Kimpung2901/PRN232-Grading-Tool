@@ -20,7 +20,12 @@ internal static class ProcessRunner
         var stdOut = new StringBuilder();
         var stdErr = new StringBuilder();
 
-        using var logWriter = new StreamWriter(logFilePath, append, Encoding.UTF8);
+        using var logStream = new FileStream(
+            logFilePath,
+            append ? FileMode.Append : FileMode.Create,
+            FileAccess.Write,
+            FileShare.ReadWrite);
+        using var logWriter = new StreamWriter(logStream, Encoding.UTF8);
 
         process.OutputDataReceived += (_, args) =>
         {
@@ -88,7 +93,12 @@ internal static class ProcessRunner
         Directory.CreateDirectory(Path.GetDirectoryName(logFilePath)!);
 
         var process = CreateProcess(fileName, arguments, workingDirectory, environmentVariables);
-        var logWriter = TextWriter.Synchronized(new StreamWriter(logFilePath, append: false, Encoding.UTF8)
+        var logStream = new FileStream(
+            logFilePath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.ReadWrite);
+        var logWriter = TextWriter.Synchronized(new StreamWriter(logStream, Encoding.UTF8)
         {
             AutoFlush = true
         });

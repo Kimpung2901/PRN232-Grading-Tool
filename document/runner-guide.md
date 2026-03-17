@@ -31,44 +31,56 @@ File chinh:
 - `Pipeline/NewmanService.cs`
 - `Pipeline/ReportParser.cs`
 - `Pipeline/CleanupService.cs`
+- `Pipeline/EnvironmentSetupService.cs`
+- `Pipeline/RunnerPathResolver.cs`
 - `Models/TestOutcome.cs`
 
-## 3. Cau truc thu muc can chuan bi
+## 3. Cau truc thu muc
 
-Khi chay runner, thu muc hien tai can co cac folder sau:
+Runner su dung cau truc thu muc sau:
 
 ```text
 Runner/
-├ workspace/
-├ submissions/
-│  └ submission1.zip
-├ collections/
-│  └ exam.postman_collection.json
-└ reports/
+|- collections/
+|  `- exam.postman_collection.json
+|- submissions/
+|  `- submission1.zip
+|- workspace/
+|- reports/
+`- .tools/
 ```
 
 Y nghia:
 
-- `workspace/`: noi giai nen bai nop tam thoi
 - `submissions/`: chua file zip bai nop cua sinh vien
 - `collections/`: chua Postman collection de cham
+- `workspace/`: noi giai nen bai nop tam thoi
 - `reports/`: chua log va report JSON sau khi cham
+- `.tools/`: noi runner cai `Newman` local va luu npm cache local
+
+Trong project da co san cac thu muc sau:
+
+- `submissions/`
+- `collections/`
+- `workspace/`
+- `reports/`
 
 ## 4. Quy trinh cham bai
 
 Pipeline duoc thuc hien theo thu tu sau:
 
-1. Tim file `.zip` dau tien trong `submissions/`
-2. Giai nen vao `workspace/submission-{timestamp}`
-3. Tim file `.csproj` dau tien trong bai nop
-4. Chay `dotnet build`
-5. Chay `dotnet run --no-build`
-6. Gan API vao `http://localhost:5000`
-7. Health check toi da 10 lan, moi lan cach nhau 2 giay
-8. Chay Newman voi collection
-9. Doc `report.json` va map thanh `List<TestOutcome>`
-10. Kill API process
-11. Xoa workspace tam
+1. Kiem tra `Newman` co san hay chua
+2. Tim file `.zip` dau tien trong `submissions/`
+3. Giai nen vao `workspace/submission-{timestamp}`
+4. Tim file `.csproj` dau tien trong bai nop
+5. Chay `dotnet build`
+6. Chay `dotnet run --no-build`
+7. Gan API vao `http://localhost:5000`
+8. Health check toi da 10 lan, moi lan cach nhau 2 giay
+9. Chay Newman voi collection
+10. Doc `report.json` va map thanh `List<TestOutcome>`
+11. Kill API process
+12. Xoa workspace tam
 
 ## 5. Cach chay
 
@@ -104,10 +116,9 @@ dotnet run
 Can cai san:
 
 - `.NET SDK 8+`
-- `Newman CLI`
 - `npm` neu muon runner tu dong cai `Newman`
 
-Cai Newman:
+Co the cai Newman thu cong:
 
 ```powershell
 npm install -g newman
@@ -125,9 +136,9 @@ npm -v
 
 Khi pipeline bat dau, runner se tu dong kiem tra `newman` da co san hay chua.
 
-- Neu da cai san: tiep tuc cham bai
-- Neu chua cai: runner hoi tren console co muon cai tu dong hay khong
-- Neu nguoi dung chon `y` hoac `yes`: runner chay `npm install -g newman`
+- Neu da co `newman` local hoac global: tiep tuc cham bai
+- Neu chua co: runner hoi tren console co muon cai tu dong hay khong
+- Neu nguoi dung chon `y` hoac `yes`: runner cai `newman` local vao `Runner/.tools/newman`
 - Neu nguoi dung chon `n`: pipeline dung voi ma loi `TEST_RUN_FAILED`
 - Neu may chua co `npm`: pipeline dung voi ma loi `TEST_RUN_FAILED`
 - Tren Windows, runner uu tien dung `npm.cmd` va `newman.cmd`
@@ -138,11 +149,12 @@ Khi pipeline bat dau, runner se tu dong kiem tra `newman` da co san hay chua.
 
 - File bai nop phai la `.zip`
 - Ben trong phai co it nhat 1 file `.csproj`
+- Runner hien tai lay file `.zip` dau tien trong `submissions/`
 
 ### Postman collection
 
 - File collection phai co dinh dang `.postman_collection.json`
-- Runner hien tai se lay file dau tien trong `collections/`
+- Runner hien tai lay file dau tien trong `collections/`
 
 ## 8. Dau ra
 
@@ -187,6 +199,12 @@ Y nghia:
 - `newman.log`: output cua lenh Newman
 - `report.json`: JSON report xuat tu Newman
 
+Runner co the tao them:
+
+- `.tools/newman/`
+- `.tools/npm-cache/`
+- `.tools/npm-home/`
+
 ## 10. Ma loi hien tai
 
 Runner tra ve cac ma loi ro rang:
@@ -218,6 +236,7 @@ Xay ra khi:
 - Khong tim thay Postman collection
 - Newman chay that bai
 - Khong doc duoc report
+- Newman khong ton tai va nguoi dung khong dong y cai
 - Loi khac trong pipeline
 
 ## 11. Luu y ky thuat
@@ -227,24 +246,14 @@ Xay ra khi:
 - Runner se kill API process trong `finally`, ke ca khi co exception
 - Workspace tam se duoc xoa sau moi lan chay
 - Runner hien tai lay file `.zip` dau tien va collection dau tien trong thu muc
+- Runner tu dong resolve root cua project `Runner`, khong phu thuoc `bin/Debug/net8.0`
 
-## 12. Goi y cai tien sau nay
-
-Co the mo rong them:
-
-- Cho phep truyen `submission path` bang command line args
-- Cho phep cau hinh `port`
-- Ho tro nhieu bai nop trong mot lan chay
-- Chon dung endpoint health check, vi du `/health`
-- Luu them diem so tong hop
-- Xuat ket qua CSV hoac HTML
-
-## 13. Kiem tra nhanh
+## 12. Kiem tra nhanh
 
 Checklist truoc khi demo:
 
 - Co file zip trong `submissions/`
 - Co file collection trong `collections/`
-- May da cai `newman`
+- May co `npm` hoac da co `newman`
 - Bai nop build duoc bang `dotnet build`
 - Bai nop co the chay tren localhost

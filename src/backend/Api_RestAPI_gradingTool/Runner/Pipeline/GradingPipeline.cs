@@ -122,9 +122,18 @@ public sealed class GradingPipeline
 
     private static async Task<string> SafeReadFileAsync(string filePath, CancellationToken cancellationToken)
     {
-        return File.Exists(filePath)
-            ? await File.ReadAllTextAsync(filePath, cancellationToken)
-            : string.Empty;
+        if (!File.Exists(filePath))
+        {
+            return string.Empty;
+        }
+
+        await using var stream = new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync(cancellationToken);
     }
 
     private static async Task StopApiProcessAsync(Process? apiProcess)

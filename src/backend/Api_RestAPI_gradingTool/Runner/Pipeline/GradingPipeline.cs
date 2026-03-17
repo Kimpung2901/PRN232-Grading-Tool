@@ -19,7 +19,7 @@ public sealed class GradingPipeline
 
     public async Task RunPipeline(CancellationToken cancellationToken = default)
     {
-        var runnerRoot = Directory.GetCurrentDirectory();
+        var runnerRoot = RunnerPathResolver.ResolveRunnerRoot();
         var workspaceRoot = Path.Combine(runnerRoot, "workspace");
         var submissionsRoot = Path.Combine(runnerRoot, "submissions");
         var collectionsRoot = Path.Combine(runnerRoot, "collections");
@@ -45,7 +45,7 @@ public sealed class GradingPipeline
 
         try
         {
-            var newmanCommand = await _environmentSetupService.EnsureNewmanInstalledAsync(newmanLogPath, cancellationToken);
+            var newmanCommand = await _environmentSetupService.EnsureNewmanInstalledAsync(runnerRoot, newmanLogPath, cancellationToken);
 
             var submissionZipPath = ResolveSingleFile(submissionsRoot, "*.zip", "submission zip");
             var collectionPath = ResolveSingleFile(collectionsRoot, "*.postman_collection.json", "Postman collection");

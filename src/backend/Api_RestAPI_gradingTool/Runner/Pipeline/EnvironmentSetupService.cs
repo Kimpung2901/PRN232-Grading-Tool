@@ -2,9 +2,12 @@ namespace Runner.Pipeline;
 
 public sealed class EnvironmentSetupService
 {
-    public async Task<string> EnsureNewmanInstalledAsync(string logFilePath, CancellationToken cancellationToken = default)
+    public async Task<string> EnsureNewmanInstalledAsync(
+        string runnerRoot,
+        string logFilePath,
+        CancellationToken cancellationToken = default)
     {
-        var newmanCommand = await ResolveNewmanCommandAsync(logFilePath, cancellationToken);
+        var newmanCommand = await ResolveNewmanCommandAsync(runnerRoot, logFilePath, cancellationToken);
         if (!string.IsNullOrWhiteSpace(newmanCommand))
         {
             return newmanCommand;
@@ -19,18 +22,20 @@ public sealed class EnvironmentSetupService
             throw new PipelineException("TEST_RUN_FAILED", "Newman CLI is required but was not installed.");
         }
 
-        var npmCommand = ResolveNpmCommand();
-        if (!await CommandExistsAsync(npmCommand, "--version", logFilePath, cancellationToken))
+        var npmCommand = await ResolveCommandPathAsync(ResolveNpmCommandName(), runnerRoot, logFilePath, cancellationToken);
+        if (string.IsNullOrWhiteSpace(npmCommand) ||
+            !await CommandExistsAsync(npmCommand, "--version", runnerRoot, logFilePath, cancellationToken))
         {
             throw new PipelineException("TEST_RUN_FAILED", "npm is not installed, so Newman CLI cannot be installed automatically.");
         }
 
         var installResult = await ProcessRunner.RunAsync(
             npmCommand,
-            "install -g newman",
-            Directory.GetCurrentDirectory(),
+            $"install newman --prefix \"{GetToolRoot(runnerRoot)}\" --no-audit --no-fund",
+            runnerRoot,
             logFilePath,
             append: true,
+            environmentVariables: CreateNpmEnvironmentVariables(runnerRoot),
             cancellationToken: cancellationToken);
 
         if (installResult.ExitCode != 0)
@@ -38,7 +43,7 @@ public sealed class EnvironmentSetupService
             throw new PipelineException("TEST_RUN_FAILED", $"Automatic Newman CLI installation failed. {installResult.CombinedOutput}");
         }
 
-        newmanCommand = await ResolveNewmanCommandAsync(logFilePath, cancellationToken);
+        newmanCommand = await ResolveNewmanCommandAsync(runnerRoot, logFilePath, cancellationToken);
         if (string.IsNullOrWhiteSpace(newmanCommand))
         {
             throw new PipelineException("TEST_RUN_FAILED", "Newman CLI installation completed but the command is still unavailable.");
@@ -47,16 +52,28 @@ public sealed class EnvironmentSetupService
         return newmanCommand;
     }
 
-    private static async Task<string?> ResolveNewmanCommandAsync(string logFilePath, CancellationToken cancellationToken)
+    private static async Task<string?> ResolveNewmanCommandAsync(
+        string runnerRoot,
+        string logFilePath,
+        CancellationToken cancellationToken)
     {
-        var directCommand = ResolveNewmanCommandName();
-        if (await CommandExistsAsync(directCommand, "--version", logFilePath, cancellationToken))
+        var localCommand = GetLocalNewmanCommandPath(runnerRoot);
+        if (File.Exists(localCommand) &&
+            await CommandExistsAsync(localCommand, "--version", runnerRoot, logFilePath, cancellationToken))
+        {
+            return localCommand;
+        }
+
+        var directCommand = await ResolveCommandPathAsync(ResolveNewmanCommandName(), runnerRoot, logFilePath, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(directCommand) &&
+            await CommandExistsAsync(directCommand, "--version", runnerRoot, logFilePath, cancellationToken))
         {
             return directCommand;
         }
 
-        var npmCommand = ResolveNpmCommand();
-        if (!await CommandExistsAsync(npmCommand, "--version", logFilePath, cancellationToken))
+        var npmCommand = await ResolveCommandPathAsync(ResolveNpmCommandName(), runnerRoot, logFilePath, cancellationToken);
+        if (string.IsNullOrWhiteSpace(npmCommand) ||
+            !await CommandExistsAsync(npmCommand, "--version", runnerRoot, logFilePath, cancellationToken))
         {
             return null;
         }
@@ -64,7 +81,7 @@ public sealed class EnvironmentSetupService
         var prefixResult = await ProcessRunner.RunAsync(
             npmCommand,
             "prefix -g",
-            Directory.GetCurrentDirectory(),
+            runnerRoot,
             logFilePath,
             append: true,
             cancellationToken: cancellationToken);
@@ -112,7 +129,7 @@ public sealed class EnvironmentSetupService
         yield return Path.Combine(npmPrefix, "bin", "newman");
     }
 
-    private static string ResolveNpmCommand()
+    private static string ResolveNpmCommandName()
     {
         return OperatingSystem.IsWindows() ? "npm.cmd" : "npm";
     }
@@ -122,9 +139,46 @@ public sealed class EnvironmentSetupService
         return OperatingSystem.IsWindows() ? "newman.cmd" : "newman";
     }
 
+    private static async Task<string?> ResolveCommandPathAsync(
+        string commandName,
+        string workingDirectory,
+        string logFilePath,
+        CancellationToken cancellationToken)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return commandName;
+        }
+
+        try
+        {
+            var result = await ProcessRunner.RunAsync(
+                "where.exe",
+                commandName,
+                workingDirectory,
+                logFilePath,
+                append: true,
+                cancellationToken: cancellationToken);
+
+            if (result.ExitCode != 0)
+            {
+                return null;
+            }
+
+            return result.StdOut
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static async Task<bool> CommandExistsAsync(
         string fileName,
         string arguments,
+        string workingDirectory,
         string logFilePath,
         CancellationToken cancellationToken)
     {
@@ -133,7 +187,7 @@ public sealed class EnvironmentSetupService
             var result = await ProcessRunner.RunAsync(
                 fileName,
                 arguments,
-                Directory.GetCurrentDirectory(),
+                workingDirectory,
                 logFilePath,
                 append: true,
                 cancellationToken: cancellationToken);
@@ -156,5 +210,34 @@ public sealed class EnvironmentSetupService
         var normalized = answer.Trim();
         return normalized.Equals("y", StringComparison.OrdinalIgnoreCase) ||
                normalized.Equals("yes", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetToolRoot(string runnerRoot)
+    {
+        return Path.Combine(runnerRoot, ".tools", "newman");
+    }
+
+    private static Dictionary<string, string?> CreateNpmEnvironmentVariables(string runnerRoot)
+    {
+        var npmHome = Path.Combine(runnerRoot, ".tools", "npm-home");
+        var npmCache = Path.Combine(runnerRoot, ".tools", "npm-cache");
+
+        Directory.CreateDirectory(npmHome);
+        Directory.CreateDirectory(npmCache);
+
+        return new Dictionary<string, string?>
+        {
+            ["npm_config_cache"] = npmCache,
+            ["npm_config_userconfig"] = Path.Combine(npmHome, ".npmrc"),
+            ["npm_config_globalconfig"] = Path.Combine(npmHome, "global-npmrc")
+        };
+    }
+
+    private static string GetLocalNewmanCommandPath(string runnerRoot)
+    {
+        var toolRoot = GetToolRoot(runnerRoot);
+        return OperatingSystem.IsWindows()
+            ? Path.Combine(toolRoot, "node_modules", ".bin", "newman.cmd")
+            : Path.Combine(toolRoot, "node_modules", ".bin", "newman");
     }
 }

@@ -189,6 +189,17 @@ public sealed class TestCasesController : ApiControllerBase
 
         if (replace)
         {
+            var testCaseIds = await _db.TestCases
+                .Where(t => t.ExamId == examId)
+                .Select(t => t.Id)
+                .ToListAsync(cancellationToken);
+
+            if (testCaseIds.Count > 0)
+            {
+                var existingResults = _db.TestResults.Where(r => testCaseIds.Contains(r.TestCaseId));
+                _db.TestResults.RemoveRange(existingResults);
+            }
+
             var existing = _db.TestCases.Where(t => t.ExamId == examId);
             _db.TestCases.RemoveRange(existing);
             await _db.SaveChangesAsync(cancellationToken);

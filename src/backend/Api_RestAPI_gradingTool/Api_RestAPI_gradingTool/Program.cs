@@ -19,6 +19,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var connectionString = builder.Configuration.GetConnectionString("Default")
+    ?? builder.Configuration.GetConnectionString("GradingDb")
     ?? Environment.GetEnvironmentVariable("GRADING_DB_CONNECTION");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
@@ -37,6 +38,12 @@ builder.Services.AddCors(options =>
          .AllowAnyHeader()
          .AllowAnyMethod());
 });
+
+builder.Services.AddHttpClient();
+
+builder.Services.Configure<Api_RestAPI_gradingTool.Services.Grading.GradingRunnerOptions>(
+    builder.Configuration.GetSection("GradingRunner"));
+builder.Services.AddScoped<Api_RestAPI_gradingTool.Services.Grading.GradingRunnerService>();
 
 
 var app = builder.Build();

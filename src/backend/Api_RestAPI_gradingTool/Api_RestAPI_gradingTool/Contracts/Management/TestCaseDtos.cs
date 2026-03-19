@@ -37,6 +37,13 @@ public sealed class PatchTestCaseRequest
     public int? DependencyTestCaseId { get; set; }
 }
 
+public sealed class ImportTestCaseResultDto
+{
+    public int ExamId { get; set; }
+    public int Created { get; set; }
+    public int Skipped { get; set; }
+}
+
 public sealed class PagedResult<T>
 {
     public int Page { get; set; }

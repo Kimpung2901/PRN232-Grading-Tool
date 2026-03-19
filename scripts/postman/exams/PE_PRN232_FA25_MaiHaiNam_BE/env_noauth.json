@@ -1,0 +1,6 @@
+﻿{
+  "name": "PE_PRN232_FA25_MaiHaiNam_BE - Local NoAuth",
+  "values": [
+    { "key": "baseUrl", "value": "http://localhost:5069", "enabled": true }
+  ]
+}

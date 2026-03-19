@@ -1,0 +1,514 @@
+﻿{
+    "info":  {
+                 "name":  "FA25 Bear API - Grading",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Auth",
+                     "item":  [
+                                  {
+                                      "name":  "Login Manager",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{managerEmail}}\",\n  \"password\": \"{{managerPassword}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/Accounts/Login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "Accounts",
+                                                                               "Login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });",
+                                                                                    "var data = pm.response.json();",
+                                                                                    "pm.environment.set(\"token\", data.token);",
+                                                                                    "pm.environment.set(\"role\", data.role);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "e0331a81-e24f-4b26-80b3-cc959b1a1f51"
+                                  },
+                                  {
+                                      "name":  "Login Staff",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{staffEmail}}\",\n  \"password\": \"{{staffPassword}}\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/Accounts/Login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "Accounts",
+                                                                               "Login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });",
+                                                                                    "var data = pm.response.json();",
+                                                                                    "pm.environment.set(\"tokenStaff\", data.token);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "fa8a7b36-c879-45ed-b40a-3176e5b4943b"
+                                  },
+                                  {
+                                      "name":  "Login Invalid",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{managerEmail}}\",\n  \"password\": \"wrong\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/Accounts/Login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "Accounts",
+                                                                               "Login"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 401\", function () { pm.response.to.have.status(401); });",
+                                                                                    "pm.test(\"errorCode HB40101\", function () { pm.expect(pm.response.json().errorCode).to.eql(\u0027HB40101\u0027); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "39135cf6-6dcd-4d12-ac60-cc70f966e5ee"
+                                  }
+                              ],
+                     "id":  "b27888ae-457e-400b-a700-3d1953066561"
+                 },
+                 {
+                     "name":  "BearProfiles",
+                     "item":  [
+                                  {
+                                      "name":  "Get All (Manager)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });",
+                                                                                    "pm.test(\"response is array\", function () { pm.expect(pm.response.json()).to.be.an(\u0027array\u0027); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "d85116b1-7a8b-49dc-b35e-b3f1577cbbba"
+                                  },
+                                  {
+                                      "name":  "Create Invalid Name",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"bearTypeId\": 1,\n  \"bearName\": \"abc\",\n  \"weight\": 300,\n  \"characteristics\": \"Strong\",\n  \"careNeeds\": \"Large habitat\",\n  \"modifiedDate\": \"2025-11-09T00:00:00\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 400\", function () { pm.response.to.have.status(400); });",
+                                                                                    "pm.test(\"errorCode HB40003\", function () { pm.expect(pm.response.json().errorCode).to.eql(\u0027HB40003\u0027); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "7c703a9a-cefd-4bed-8bb2-de7385602b34"
+                                  },
+                                  {
+                                      "name":  "Create Invalid Weight",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"bearTypeId\": 1,\n  \"bearName\": \"Bear#1\",\n  \"weight\": 200,\n  \"characteristics\": \"Strong\",\n  \"careNeeds\": \"Large habitat\",\n  \"modifiedDate\": \"2025-11-09T00:00:00\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 400\", function () { pm.response.to.have.status(400); });",
+                                                                                    "pm.test(\"errorCode HB40004\", function () { pm.expect(pm.response.json().errorCode).to.eql(\u0027HB40004\u0027); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "9b59cad0-0efa-41ad-851a-8688d964a336"
+                                  },
+                                  {
+                                      "name":  "Create Valid",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"bearTypeId\": 1,\n  \"bearName\": \"Bear#{{$randomInt}}\",\n  \"weight\": 350,\n  \"characteristics\": \"Strong\",\n  \"careNeeds\": \"Large habitat\",\n  \"modifiedDate\": \"2025-11-09T00:00:00\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 201\", function () { pm.response.to.have.status(201); });",
+                                                                                    "var body = pm.response.json();",
+                                                                                    "pm.environment.set(\"createdBearName\", body.bearName);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "0361e76b-9d58-4fbe-84f2-41bf3e33bb32"
+                                  },
+                                  {
+                                      "name":  "Search By Name (Manager)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles/search?name={{createdBearName}}\u0026weight=0",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles",
+                                                                               "search"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "name",
+                                                                                    "value":  "{{createdBearName}}"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "weight",
+                                                                                    "value":  "0"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });",
+                                                                                    "var data = pm.response.json();",
+                                                                                    "var firstKey = Object.keys(data)[0];",
+                                                                                    "if (firstKey \u0026\u0026 data[firstKey] \u0026\u0026 data[firstKey].length \u003e 0) {",
+                                                                                    "  pm.environment.set(\"bearProfileId\", data[firstKey][0].bearProfileId);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "d71c61ad-8344-48e6-a559-ce97c7b41905"
+                                  },
+                                  {
+                                      "name":  "Get By Id (Manager)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles/{{bearProfileId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles",
+                                                                               "{{bearProfileId}}"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "8cfe7b22-8d7e-405f-8611-402b050a2cf4"
+                                  },
+                                  {
+                                      "name":  "Update (Manager)",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"bearProfileId\": {{bearProfileId}},\n  \"bearTypeId\": 1,\n  \"bearName\": \"{{createdBearName}}\",\n  \"weight\": 360,\n  \"characteristics\": \"Updated\",\n  \"careNeeds\": \"Updated\",\n  \"modifiedDate\": \"2025-11-09T00:00:00\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles/{{bearProfileId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles",
+                                                                               "{{bearProfileId}}"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "4604d826-e9ef-4402-86fd-dccae92041c8"
+                                  },
+                                  {
+                                      "name":  "Delete (Manager)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles/{{bearProfileId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles",
+                                                                               "{{bearProfileId}}"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "8ebe1ffa-a460-4303-8adb-b00edf356fe6"
+                                  },
+                                  {
+                                      "name":  "Search (Staff)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{tokenStaff}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/BearProfiles/search?name=Bear\u0026weight=0",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "BearProfiles",
+                                                                               "search"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "name",
+                                                                                    "value":  "Bear"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "weight",
+                                                                                    "value":  "0"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "exec":  [
+                                                                                    "pm.test(\"status 200\", function () { pm.response.to.have.status(200); });"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "id":  "44b14495-2510-4112-b17a-bbe38da67c80"
+                                  }
+                              ],
+                     "id":  "9069fe3d-7aaf-4dcc-b81e-b7a45962ad4e"
+                 }
+             ],
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://localhost:5000"
+                     },
+                     {
+                         "key":  "managerEmail",
+                         "value":  "manager@hb.com"
+                     },
+                     {
+                         "key":  "managerPassword",
+                         "value":  "123"
+                     },
+                     {
+                         "key":  "staffEmail",
+                         "value":  "staff@hb.com"
+                     },
+                     {
+                         "key":  "staffPassword",
+                         "value":  "123"
+                     }
+                 ]
+}

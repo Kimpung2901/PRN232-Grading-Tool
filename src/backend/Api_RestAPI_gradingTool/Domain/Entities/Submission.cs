@@ -25,5 +25,7 @@ public partial class Submission
 
     public virtual Exam Exam { get; set; } = null!;
 
+    public virtual ICollection<GradingJob> GradingJobs { get; set; } = new List<GradingJob>();
+
     public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
 }

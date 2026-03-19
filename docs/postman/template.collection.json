@@ -1,0 +1,339 @@
+﻿{
+  "info": {
+    "name": "API Grading Template (Universal)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00-Auth (optional)",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{loginBody}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{loginRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{loginRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.environment.get('authEnabled') !== 'true') { pm.test('auth skipped', function () { pm.expect(true).to.eql(true); }); return; }",
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "if (data.token) { pm.environment.set('token', data.token); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01-Spec", 
+      "item": [
+        {
+          "name": "List (spec)",
+          "request": {
+            "method": "{{listMethod}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{listRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{listRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var expected = pm.environment.get('listExpectedStatus') || '200';",
+                  "pm.test('status ' + expected, function () { pm.expect(pm.response.code.toString()).to.eql(expected); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GetById (spec)",
+          "request": {
+            "method": "{{getMethod}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{getRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{getRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var expected = pm.environment.get('getExpectedStatus') || '200';",
+                  "pm.test('status ' + expected, function () { pm.expect(pm.response.code.toString()).to.eql(expected); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wrong Method (spec)",
+          "request": {
+            "method": "{{wrongMethod}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{listRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{listRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var expected = pm.environment.get('wrongMethodStatus') || '405';",
+                  "pm.test('wrong method status', function () { pm.expect(pm.response.code.toString()).to.eql(expected); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02-Data & Format",
+      "item": [
+        {
+          "name": "List data checks",
+          "request": {
+            "method": "{{listMethod}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{listRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{listRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "pm.test('array response', function () { pm.expect(data).to.be.an('array'); });",
+                  "var dateField = pm.environment.get('dateField');",
+                  "var dateRegex = pm.environment.get('dateRegex');",
+                  "if (dateField && dateRegex && Array.isArray(data) && data.length > 0) {",
+                  "  pm.test('date format', function () { pm.expect(data[0][dateField]).to.match(new RegExp(dateRegex)); });",
+                  "}",
+                  "var filterField1 = pm.environment.get('filterField1');",
+                  "var filterValue1 = pm.environment.get('filterValue1');",
+                  "if (filterField1 && filterValue1 && Array.isArray(data)) {",
+                  "  pm.test('filter field 1 match', function () {",
+                  "    data.forEach(function(x){ pm.expect(String(x[filterField1]).toLowerCase()).to.eql(String(filterValue1).toLowerCase()); });",
+                  "  });",
+                  "}",
+                  "var filterField2 = pm.environment.get('filterField2');",
+                  "var filterValue2 = pm.environment.get('filterValue2');",
+                  "if (filterField2 && filterValue2 && Array.isArray(data)) {",
+                  "  pm.test('filter field 2 match', function () {",
+                  "    data.forEach(function(x){ pm.expect(String(x[filterField2]).toLowerCase()).to.eql(String(filterValue2).toLowerCase()); });",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GetById data checks",
+          "request": {
+            "method": "{{getMethod}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{getRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{getRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "var data = pm.response.json();",
+                  "var emptyListFields = pm.environment.get('emptyListFields');",
+                  "if (emptyListFields) {",
+                  "  emptyListFields.split(',').forEach(function(f){",
+                  "    var key = f.trim();",
+                  "    if (key && data[key]) { pm.expect(data[key]).to.be.an('array').that.is.empty; }",
+                  "  });",
+                  "}",
+                  "var dateField = pm.environment.get('dateField');",
+                  "var dateRegex = pm.environment.get('dateRegex');",
+                  "if (dateField && dateRegex && data && data[dateField]) {",
+                  "  pm.test('date format', function () { pm.expect(data[dateField]).to.match(new RegExp(dateRegex)); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create (business)",
+          "request": {
+            "method": "{{createMethod}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{createBody}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{createRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{createRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var expected = pm.environment.get('createExpectedStatus') || '200';",
+                  "pm.test('status ' + expected, function () { pm.expect(pm.response.code.toString()).to.eql(expected); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03-Errors",
+      "item": [
+        {
+          "name": "Create error",
+          "request": {
+            "method": "{{createMethod}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{createBody}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{createRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{createRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var expected = pm.environment.get('errorStatus') || '409';",
+                  "pm.test('status ' + expected, function () { pm.expect(pm.response.code.toString()).to.eql(expected); });",
+                  "var msg = pm.environment.get('errorMessage');",
+                  "if (msg) {",
+                  "  var body = pm.response.text();",
+                  "  pm.test('error message', function () { pm.expect(body).to.include(msg); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid parameter",
+          "request": {
+            "method": "{{getMethod}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{invalidParamRoute}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{invalidParamRoute}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var expected = pm.environment.get('invalidParamStatus') || '400';",
+                  "pm.test('status ' + expected, function () { pm.expect(pm.response.code.toString()).to.eql(expected); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "authEnabled", "value": "false" },
+    { "key": "loginRoute", "value": "/auth/login" },
+    { "key": "loginBody", "value": "{}" },
+    { "key": "listMethod", "value": "GET" },
+    { "key": "listRoute", "value": "/api/resource" },
+    { "key": "listExpectedStatus", "value": "200" },
+    { "key": "getMethod", "value": "GET" },
+    { "key": "getRoute", "value": "/api/resource/1" },
+    { "key": "getExpectedStatus", "value": "200" },
+    { "key": "createMethod", "value": "POST" },
+    { "key": "createRoute", "value": "/api/resource" },
+    { "key": "createBody", "value": "{}" },
+    { "key": "createExpectedStatus", "value": "200" },
+    { "key": "wrongMethod", "value": "POST" },
+    { "key": "wrongMethodStatus", "value": "405" },
+    { "key": "dateField", "value": "" },
+    { "key": "dateRegex", "value": "^\\d{1,2}\\/\\d{1,2}\\/\\d{4}$" },
+    { "key": "filterField1", "value": "" },
+    { "key": "filterValue1", "value": "" },
+    { "key": "filterField2", "value": "" },
+    { "key": "filterValue2", "value": "" },
+    { "key": "emptyListFields", "value": "" },
+    { "key": "invalidParamRoute", "value": "/api/resource/abc" },
+    { "key": "invalidParamStatus", "value": "400" },
+    { "key": "errorStatus", "value": "409" },
+    { "key": "errorMessage", "value": "" }
+  ]
+}

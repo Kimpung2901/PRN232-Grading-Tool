@@ -1,0 +1,744 @@
+﻿{
+  "info": {
+    "name": "PE_PRN232_FA25_MaiHaiNam_BE - API Tests (Strict)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login - Manager",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{manager_email}}\",\n  \"password\": \"{{manager_password}}\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/Accounts/Login", "host": [ "{{baseUrl}}" ], "path": [ "Accounts", "Login" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.test('Token exists', function () { pm.expect(json.token).to.be.a('string').and.not.empty; });",
+              "pm.environment.set('token_manager', json.token);",
+              "pm.environment.set('role_manager', json.role);",
+              "pm.test('Role is manager', function () { pm.expect(json.role).to.eql('manager'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Staff",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{staff_email}}\",\n  \"password\": \"{{staff_password}}\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/Accounts/Login", "host": [ "{{baseUrl}}" ], "path": [ "Accounts", "Login" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.environment.set('token_staff', json.token);",
+              "pm.environment.set('role_staff', json.role);",
+              "pm.test('Role is staff', function () { pm.expect(json.role).to.eql('staff'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Member",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{member_email}}\",\n  \"password\": \"{{member_password}}\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/Accounts/Login", "host": [ "{{baseUrl}}" ], "path": [ "Accounts", "Login" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.environment.set('token_member', json.token);",
+              "pm.environment.set('role_member', json.role);",
+              "pm.test('Role is member', function () { pm.expect(json.role).to.eql('member'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Missing Fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": { "raw": "{{baseUrl}}/Accounts/Login", "host": [ "{{baseUrl}}" ], "path": [ "Accounts", "Login" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+              "var json = pm.response.json();",
+              "pm.test('ErrorCode HB40001', function () { pm.expect(json.errorCode).to.eql('HB40001'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Invalid",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"invalid@example.com\",\n  \"password\": \"wrong\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/Accounts/Login", "host": [ "{{baseUrl}}" ], "path": [ "Accounts", "Login" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });",
+              "var json = pm.response.json();",
+              "pm.test('ErrorCode HB40101', function () { pm.expect(json.errorCode).to.eql('HB40101'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Login - Wrong Method GET",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/Accounts/Login", "host": [ "{{baseUrl}}" ], "path": [ "Accounts", "Login" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 405', function () { pm.expect([405]).to.include(pm.response.code); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Unauthorized",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Get All (Manager)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.test('Response is array', function () { pm.expect(json).to.be.an('array'); });",
+              "if (Array.isArray(json) && json.length > 0) {",
+              "  var first = json[0];",
+              "  var id = first.bearProfileId || first.BearProfileId || first.bearProfileID || first.BearProfileID;",
+              "  var bt = first.bearTypeId || first.BearTypeId;",
+              "  if (id) pm.environment.set('firstId', id);",
+              "  if (bt) pm.environment.set('bearTypeId', bt);",
+              "  pm.environment.set('hasProfiles', 'true');",
+              "  pm.test('Has required fields', function () {",
+              "    pm.expect(first).to.have.property('bearName');",
+              "    pm.expect(first).to.have.property('weight');",
+              "    pm.expect(first).to.have.property('bearTypeId');",
+              "    pm.expect(first).to.have.property('modifiedDate');",
+              "  });",
+              "} else {",
+              "  pm.environment.set('hasProfiles', 'false');",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Get All (Staff Forbidden)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_staff}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Get All (Member Forbidden)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_member}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Get By Id (Manager)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": { "exec": [ "if (!pm.environment.get('firstId')) { pm.environment.set('firstId', '0'); }" ] }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var has = pm.environment.get('hasProfiles') === 'true';",
+              "if (has) {",
+              "  pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "  var json = pm.response.json();",
+              "  pm.test('Has required fields', function () {",
+              "    pm.expect(json).to.have.property('bearName');",
+              "    pm.expect(json).to.have.property('weight');",
+              "    pm.expect(json).to.have.property('bearTypeId');",
+              "    pm.expect(json).to.have.property('modifiedDate');",
+              "  });",
+              "} else {",
+              "  pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+              "  var json = pm.response.json();",
+              "  pm.test('ErrorCode HB40401', function () { pm.expect(json.errorCode).to.eql('HB40401'); });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/{{firstId}}", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "{{firstId}}" ] }
+      }
+    },
+    {
+      "name": "BearProfiles - Get By Id Not Found",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/999999", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "999999" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+              "var json = pm.response.json();",
+              "pm.test('ErrorCode HB40401', function () { pm.expect(json.errorCode).to.eql('HB40401'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Create Missing Body",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "" },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+              "var json = pm.response.json();",
+              "pm.test('ErrorCode HB40001', function () { pm.expect(json.errorCode).to.eql('HB40001'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Create Missing Name",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bearTypeId\": {{bearTypeId}},\n  \"bearName\": \"\",\n  \"weight\": 250,\n  \"characteristics\": \"test\",\n  \"careNeeds\": \"test\",\n  \"modifiedDate\": \"2026-03-19T00:00:00\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+              "var json = pm.response.json();",
+              "pm.test('ErrorCode HB40002', function () { pm.expect(json.errorCode).to.eql('HB40002'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Create Invalid Name",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bearTypeId\": {{bearTypeId}},\n  \"bearName\": \"abc\",\n  \"weight\": 250,\n  \"characteristics\": \"test\",\n  \"careNeeds\": \"test\",\n  \"modifiedDate\": \"2026-03-19T00:00:00\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+              "var json = pm.response.json();",
+              "pm.test('ErrorCode HB40003', function () { pm.expect(json.errorCode).to.eql('HB40003'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Create Invalid Weight",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bearTypeId\": {{bearTypeId}},\n  \"bearName\": \"Bear#1\",\n  \"weight\": 200,\n  \"characteristics\": \"test\",\n  \"careNeeds\": \"test\",\n  \"modifiedDate\": \"2026-03-19T00:00:00\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+              "var json = pm.response.json();",
+              "pm.test('ErrorCode HB40004', function () { pm.expect(json.errorCode).to.eql('HB40004'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Create Wrong Content-Type",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "text/plain" }
+        ],
+        "body": { "mode": "raw", "raw": "plain" },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": [ "pm.test('Status 415', function () { pm.response.to.have.status(415); });" ] }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Create (Staff Forbidden)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_staff}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Create (Member Forbidden)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_member}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Create Success",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": { "exec": [ "if (!pm.environment.get('bearTypeId')) { pm.environment.set('bearTypeId', '1'); }" ] }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+              "var json = pm.response.json();",
+              "var id = json.bearProfileId || json.BearProfileId || json.bearProfileID || json.BearProfileID;",
+              "if (id) pm.environment.set('createdId', id);",
+              "pm.test('Created fields match', function () {",
+              "  pm.expect(json.bearTypeId || json.BearTypeId).to.eql(parseInt(pm.environment.get('bearTypeId')));",
+              "  pm.expect(json.bearName || json.BearName).to.eql(pm.environment.get('createName'));",
+              "  pm.expect(json.weight || json.Weight).to.eql(250);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bearTypeId\": {{bearTypeId}},\n  \"bearName\": \"{{createName}}\",\n  \"weight\": 250,\n  \"characteristics\": \"test\",\n  \"careNeeds\": \"test\",\n  \"modifiedDate\": \"2026-03-19T00:00:00\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/BearProfiles", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles" ] }
+      }
+    },
+    {
+      "name": "BearProfiles - Update Not Found",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bearTypeId\": {{bearTypeId}},\n  \"bearName\": \"Bear#Update\",\n  \"weight\": 260,\n  \"characteristics\": \"update\",\n  \"careNeeds\": \"update\",\n  \"modifiedDate\": \"2026-03-19T00:00:00\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/BearProfiles/999999", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "999999" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 404', function () { pm.response.to.have.status(404); });", "var json = pm.response.json();", "pm.test('ErrorCode HB40401', function () { pm.expect(json.errorCode).to.eql('HB40401'); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Update (Staff Forbidden)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_staff}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": { "raw": "{{baseUrl}}/BearProfiles/1", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "1" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Update (Member Forbidden)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_member}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": { "raw": "{{baseUrl}}/BearProfiles/1", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "1" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Update Success",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var id = pm.environment.get('createdId') || pm.environment.get('firstId') || '0';",
+              "pm.environment.set('updateId', id);",
+              "pm.environment.set('updateName', 'Bear#Updated');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var id = pm.environment.get('updateId');",
+              "if (id && id !== '0') {",
+              "  pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "  var json = pm.response.json();",
+              "  pm.test('Updated fields match', function () {",
+              "    pm.expect(json.bearName || json.BearName).to.eql(pm.environment.get('updateName'));",
+              "    pm.expect(json.weight || json.Weight).to.eql(260);",
+              "  });",
+              "} else {",
+              "  pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"bearTypeId\": {{bearTypeId}},\n  \"bearName\": \"{{updateName}}\",\n  \"weight\": 260,\n  \"characteristics\": \"update\",\n  \"careNeeds\": \"update\",\n  \"modifiedDate\": \"2026-03-19T00:00:00\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/BearProfiles/{{updateId}}", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "{{updateId}}" ] }
+      }
+    },
+    {
+      "name": "BearProfiles - Get By Id After Update",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/{{updateId}}", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "{{updateId}}" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var id = pm.environment.get('updateId');",
+              "if (id && id !== '0') {",
+              "  pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "  var json = pm.response.json();",
+              "  pm.test('Updated fields persisted', function () {",
+              "    pm.expect(json.bearName || json.BearName).to.eql(pm.environment.get('updateName'));",
+              "    pm.expect(json.weight || json.Weight).to.eql(260);",
+              "  });",
+              "} else {",
+              "  pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Delete (Staff Forbidden)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_staff}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/{{updateId}}", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "{{updateId}}" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Delete (Member Forbidden)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_member}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/{{updateId}}", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "{{updateId}}" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 403', function () { pm.response.to.have.status(403); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Delete Success",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "var id = pm.environment.get('createdId') || '0';",
+              "pm.environment.set('deleteId', id);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var id = pm.environment.get('deleteId');",
+              "if (id && id !== '0') {",
+              "  pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "} else {",
+              "  pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+              "  var json = pm.response.json();",
+              "  pm.test('ErrorCode HB40401', function () { pm.expect(json.errorCode).to.eql('HB40401'); });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/{{deleteId}}", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "{{deleteId}}" ] }
+      }
+    },
+    {
+      "name": "BearProfiles - Get Deleted Returns 404",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/{{deleteId}}", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "{{deleteId}}" ] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var id = pm.environment.get('deleteId');",
+              "if (id && id !== '0') {",
+              "  pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+              "  var json = pm.response.json();",
+              "  pm.test('ErrorCode HB40401', function () { pm.expect(json.errorCode).to.eql('HB40401'); });",
+              "} else {",
+              "  pm.test('Skip - no deleteId', function () { pm.expect(true).to.be.true; });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "BearProfiles - Wrong Method POST to /BearProfiles/{id}",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token_manager}}" } ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/1", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "1" ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 405', function () { pm.expect([405]).to.include(pm.response.code); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Search (Manager)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/BearProfiles/search?name=A&weight=0",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "BearProfiles", "search" ],
+          "query": [
+            { "key": "name", "value": "A" },
+            { "key": "weight", "value": "0" }
+          ]
+        }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var json = pm.response.json();", "pm.test('Response is object', function () { pm.expect(json).to.be.an('object'); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Search (Staff)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token_staff}}" } ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/search?name=A&weight=0", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "search" ], "query": [ { "key": "name", "value": "A" }, { "key": "weight", "value": "0" } ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 200', function () { pm.response.to.have.status(200); });" ] } } ]
+    },
+    {
+      "name": "BearProfiles - Search (Member)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "Bearer {{token_member}}" } ],
+        "url": { "raw": "{{baseUrl}}/BearProfiles/search?name=A&weight=0", "host": [ "{{baseUrl}}" ], "path": [ "BearProfiles", "search" ], "query": [ { "key": "name", "value": "A" }, { "key": "weight", "value": "0" } ] }
+      },
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status 200', function () { pm.response.to.have.status(200); });" ] } } ]
+    }
+  ],
+  "variable": [
+    { "key": "createName", "value": "Bear#{{$randomInt}}" },
+    { "key": "updateName", "value": "Bear#Updated" }
+  ]
+}

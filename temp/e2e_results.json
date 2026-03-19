@@ -1,0 +1,9 @@
+﻿{
+    "submissionId":  1,
+    "status":  3,
+    "totalScore":  0.00,
+    "lastError":  "An error occurred trying to start process \u0027newman\u0027 with working directory \u0027D:\\PRN232\\RestAPI_Grading_Tool\\src\\backend\\Api_RestAPI_gradingTool\\Api_RestAPI_gradingTool\\data\\exams\\1003\u0027. The system cannot find the file specified.",
+    "results":  [
+
+                ]
+}

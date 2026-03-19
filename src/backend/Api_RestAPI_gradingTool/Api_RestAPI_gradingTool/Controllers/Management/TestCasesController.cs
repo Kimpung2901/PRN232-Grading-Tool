@@ -4,6 +4,8 @@ using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Api_RestAPI_gradingTool.Validation;
+using System.Text.Json;
+using System.Linq;
 
 namespace Api_RestAPI_gradingTool.Controllers.Management;
 
@@ -153,6 +155,81 @@ public sealed class TestCasesController : ApiControllerBase
         };
 
         return CreatedAtAction(nameof(GetById), new { examId, id = entity.Id }, dto);
+    }
+
+    [HttpPost("import-from-collection")]
+    public async Task<ActionResult<ImportTestCaseResultDto>> ImportFromCollection(
+        int examId,
+        [FromQuery] decimal defaultScore = 1,
+        [FromQuery] bool replace = false,
+        CancellationToken cancellationToken = default)
+    {
+        var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
+        if (exam is null)
+        {
+            return ProblemNotFound("Exam not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(exam.CollectionFilePath) || !System.IO.File.Exists(exam.CollectionFilePath))
+        {
+            return ProblemBadRequest("collection.json is missing.");
+        }
+
+        using var stream = System.IO.File.OpenRead(exam.CollectionFilePath);
+        using var doc = JsonDocument.Parse(stream);
+
+        if (!doc.RootElement.TryGetProperty("item", out var items))
+        {
+            return ProblemBadRequest("Invalid collection.json: missing item.");
+        }
+
+        var pairs = ExtractItems(items).ToList();
+        var created = 0;
+        var skipped = 0;
+
+        if (replace)
+        {
+            var existing = _db.TestCases.Where(t => t.ExamId == examId);
+            _db.TestCases.RemoveRange(existing);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        foreach (var (id, name) in pairs)
+        {
+            var key = !string.IsNullOrWhiteSpace(id) ? id : name;
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(name))
+            {
+                skipped++;
+                continue;
+            }
+
+            var exists = await _db.TestCases
+                .AnyAsync(t => t.ExamId == examId && t.PostmanItemId == key, cancellationToken);
+
+            if (exists)
+            {
+                skipped++;
+                continue;
+            }
+
+            _db.TestCases.Add(new TestCase
+            {
+                ExamId = examId,
+                Name = name.Trim(),
+                PostmanItemId = key.Trim(),
+                Score = defaultScore
+            });
+            created++;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Ok(new ImportTestCaseResultDto
+        {
+            ExamId = examId,
+            Created = created,
+            Skipped = skipped
+        });
     }
 
     [HttpPut("{id:int}")]
@@ -391,5 +468,24 @@ public sealed class TestCasesController : ApiControllerBase
         }
 
         return null;
+    }
+
+    private static IEnumerable<(string id, string name)> ExtractItems(JsonElement items)
+    {
+        foreach (var item in items.EnumerateArray())
+        {
+            if (item.TryGetProperty("item", out var childItems))
+            {
+                foreach (var child in ExtractItems(childItems))
+                {
+                    yield return child;
+                }
+                continue;
+            }
+
+            var name = item.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
+            var id = item.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
+            yield return (id ?? string.Empty, name ?? string.Empty);
+        }
     }
 }

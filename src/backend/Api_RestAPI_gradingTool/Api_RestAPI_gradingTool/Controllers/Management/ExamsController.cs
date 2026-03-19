@@ -59,6 +59,15 @@ public sealed class ExamsController : ApiControllerBase
                 Name = e.Name,
                 DatabaseFilePath = e.DatabaseFilePath,
                 CollectionFilePath = e.CollectionFilePath,
+                EndpointSpecFilePath = e.EndpointSpecFilePath,
+                EnvironmentFilePath = e.EnvironmentFilePath,
+                StudentDbConnection = e.StudentDbConnection,
+                HealthPath = e.HealthPath,
+                SwaggerPath = e.SwaggerPath,
+                SqlCmdServer = e.SqlCmdServer,
+                SqlCmdUser = e.SqlCmdUser,
+                SqlCmdPassword = e.SqlCmdPassword,
+                NewmanExtraArgs = e.NewmanExtraArgs,
                 CreatedAt = e.CreatedAt
             })
             .ToArrayAsync(cancellationToken);
@@ -86,6 +95,15 @@ public sealed class ExamsController : ApiControllerBase
                 Name = e.Name,
                 DatabaseFilePath = e.DatabaseFilePath,
                 CollectionFilePath = e.CollectionFilePath,
+                EndpointSpecFilePath = e.EndpointSpecFilePath,
+                EnvironmentFilePath = e.EnvironmentFilePath,
+                StudentDbConnection = e.StudentDbConnection,
+                HealthPath = e.HealthPath,
+                SwaggerPath = e.SwaggerPath,
+                SqlCmdServer = e.SqlCmdServer,
+                SqlCmdUser = e.SqlCmdUser,
+                SqlCmdPassword = e.SqlCmdPassword,
+                NewmanExtraArgs = e.NewmanExtraArgs,
                 CreatedAt = e.CreatedAt,
                 TestCasesCount = e.TestCases.Count,
                 SubmissionsCount = e.Submissions.Count
@@ -141,6 +159,15 @@ public sealed class ExamsController : ApiControllerBase
             Name = entity.Name,
             DatabaseFilePath = entity.DatabaseFilePath,
             CollectionFilePath = entity.CollectionFilePath,
+            EndpointSpecFilePath = entity.EndpointSpecFilePath,
+            EnvironmentFilePath = entity.EnvironmentFilePath,
+            StudentDbConnection = entity.StudentDbConnection,
+            HealthPath = entity.HealthPath,
+            SwaggerPath = entity.SwaggerPath,
+            SqlCmdServer = entity.SqlCmdServer,
+            SqlCmdUser = entity.SqlCmdUser,
+            SqlCmdPassword = entity.SqlCmdPassword,
+            NewmanExtraArgs = entity.NewmanExtraArgs,
             CreatedAt = entity.CreatedAt
         };
 
@@ -183,6 +210,15 @@ public sealed class ExamsController : ApiControllerBase
             Name = exam.Name,
             DatabaseFilePath = exam.DatabaseFilePath,
             CollectionFilePath = exam.CollectionFilePath,
+            EndpointSpecFilePath = exam.EndpointSpecFilePath,
+            EnvironmentFilePath = exam.EnvironmentFilePath,
+            StudentDbConnection = exam.StudentDbConnection,
+            HealthPath = exam.HealthPath,
+            SwaggerPath = exam.SwaggerPath,
+            SqlCmdServer = exam.SqlCmdServer,
+            SqlCmdUser = exam.SqlCmdUser,
+            SqlCmdPassword = exam.SqlCmdPassword,
+            NewmanExtraArgs = exam.NewmanExtraArgs,
             CreatedAt = exam.CreatedAt
         };
 
@@ -217,6 +253,13 @@ public sealed class ExamsController : ApiControllerBase
         }
 
         exam.Name = newName.Trim();
+        if (request.StudentDbConnection is not null) exam.StudentDbConnection = request.StudentDbConnection.Trim();
+        if (request.HealthPath is not null) exam.HealthPath = request.HealthPath.Trim();
+        if (request.SwaggerPath is not null) exam.SwaggerPath = request.SwaggerPath.Trim();
+        if (request.SqlCmdServer is not null) exam.SqlCmdServer = request.SqlCmdServer.Trim();
+        if (request.SqlCmdUser is not null) exam.SqlCmdUser = request.SqlCmdUser.Trim();
+        if (request.SqlCmdPassword is not null) exam.SqlCmdPassword = request.SqlCmdPassword.Trim();
+        if (request.NewmanExtraArgs is not null) exam.NewmanExtraArgs = request.NewmanExtraArgs.Trim();
         await _db.SaveChangesAsync(cancellationToken);
 
         var dto = new ExamDto
@@ -226,6 +269,15 @@ public sealed class ExamsController : ApiControllerBase
             Name = exam.Name,
             DatabaseFilePath = exam.DatabaseFilePath,
             CollectionFilePath = exam.CollectionFilePath,
+            EndpointSpecFilePath = exam.EndpointSpecFilePath,
+            EnvironmentFilePath = exam.EnvironmentFilePath,
+            StudentDbConnection = exam.StudentDbConnection,
+            HealthPath = exam.HealthPath,
+            SwaggerPath = exam.SwaggerPath,
+            SqlCmdServer = exam.SqlCmdServer,
+            SqlCmdUser = exam.SqlCmdUser,
+            SqlCmdPassword = exam.SqlCmdPassword,
+            NewmanExtraArgs = exam.NewmanExtraArgs,
             CreatedAt = exam.CreatedAt
         };
 

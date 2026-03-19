@@ -10,6 +10,8 @@ namespace Api_RestAPI_gradingTool.Controllers.Management;
 public sealed class ExamResourcesController : ApiControllerBase
 {
     private const long MaxCollectionSizeBytes = 10 * 1024 * 1024;
+    private const long MaxSpecSizeBytes = 2 * 1024 * 1024;
+    private const long MaxEnvSizeBytes = 2 * 1024 * 1024;
     private const long MaxDatabaseSizeBytes = 200 * 1024 * 1024;
     private const int MaxPageSize = 100;
     private readonly GradingDbContext _db;
@@ -55,6 +57,8 @@ public sealed class ExamResourcesController : ApiControllerBase
                 ExamName = e.Name,
                 CollectionFilePath = e.CollectionFilePath!,
                 DatabaseFilePath = e.DatabaseFilePath,
+                EndpointSpecFilePath = e.EndpointSpecFilePath,
+                EnvironmentFilePath = e.EnvironmentFilePath,
                 ExamCreatedAt = e.CreatedAt
             })
             .ToArrayAsync(cancellationToken);
@@ -70,24 +74,24 @@ public sealed class ExamResourcesController : ApiControllerBase
 
     [HttpPost("{examId:int}/resources")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(MaxDatabaseSizeBytes + MaxCollectionSizeBytes)]
+    [RequestSizeLimit(MaxDatabaseSizeBytes + MaxCollectionSizeBytes + MaxSpecSizeBytes)]
     public Task<ActionResult<ExamResourceDto>> Create(
         int examId,
         [FromForm] ExamResourceUploadRequest request,
         CancellationToken cancellationToken = default)
     {
-        return UploadInternal(examId, request.Collection, request.Database, cancellationToken);
+        return UploadInternal(examId, request.Collection, request.Database, request.EndpointSpec, request.Environment, cancellationToken);
     }
 
     [HttpPut("{examId:int}/resources")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(MaxDatabaseSizeBytes + MaxCollectionSizeBytes)]
+    [RequestSizeLimit(MaxDatabaseSizeBytes + MaxCollectionSizeBytes + MaxSpecSizeBytes)]
     public Task<ActionResult<ExamResourceDto>> Replace(
         int examId,
         [FromForm] ExamResourceUploadRequest request,
         CancellationToken cancellationToken = default)
     {
-        return UploadInternal(examId, request.Collection, request.Database, cancellationToken);
+        return UploadInternal(examId, request.Collection, request.Database, request.EndpointSpec, request.Environment, cancellationToken);
     }
 
     [HttpGet("{examId:int}/resources")]
@@ -106,11 +110,13 @@ public sealed class ExamResourcesController : ApiControllerBase
             return ProblemNotFound("Resources not found.");
         }
 
-        return Ok(new ExamResourceDto
+            return Ok(new ExamResourceDto
         {
             ExamId = exam.Id,
             CollectionFilePath = exam.CollectionFilePath,
             DatabaseFilePath = exam.DatabaseFilePath,
+            EndpointSpecFilePath = exam.EndpointSpecFilePath,
+            EnvironmentFilePath = exam.EnvironmentFilePath,
             UpdatedAt = DateTime.UtcNow
         });
     }
@@ -136,8 +142,20 @@ public sealed class ExamResourcesController : ApiControllerBase
             System.IO.File.Delete(exam.DatabaseFilePath);
         }
 
+        if (!string.IsNullOrWhiteSpace(exam.EndpointSpecFilePath) && System.IO.File.Exists(exam.EndpointSpecFilePath))
+        {
+            System.IO.File.Delete(exam.EndpointSpecFilePath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(exam.EnvironmentFilePath) && System.IO.File.Exists(exam.EnvironmentFilePath))
+        {
+            System.IO.File.Delete(exam.EnvironmentFilePath);
+        }
+
         exam.CollectionFilePath = null;
         exam.DatabaseFilePath = null;
+        exam.EndpointSpecFilePath = null;
+        exam.EnvironmentFilePath = null;
 
         await _db.SaveChangesAsync(cancellationToken);
 
@@ -148,6 +166,8 @@ public sealed class ExamResourcesController : ApiControllerBase
         int examId,
         IFormFile collection,
         IFormFile? database,
+        IFormFile? endpointSpec,
+        IFormFile? environment,
         CancellationToken cancellationToken)
     {
         if (collection is null || collection.Length == 0)
@@ -178,6 +198,32 @@ public sealed class ExamResourcesController : ApiControllerBase
             }
         }
 
+        if (endpointSpec is not null)
+        {
+            if (!HasExtension(endpointSpec.FileName, ".json"))
+            {
+                return ProblemBadRequest("endpoint-spec must be a .json file.");
+            }
+
+            if (endpointSpec.Length > MaxSpecSizeBytes)
+            {
+                return ProblemBadRequest("endpoint-spec.json is too large.");
+            }
+        }
+
+        if (environment is not null)
+        {
+            if (!HasExtension(environment.FileName, ".json"))
+            {
+                return ProblemBadRequest("environment must be a .json file.");
+            }
+
+            if (environment.Length > MaxEnvSizeBytes)
+            {
+                return ProblemBadRequest("environment.json is too large.");
+            }
+        }
+
         var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == examId, cancellationToken);
         if (exam is null)
         {
@@ -201,10 +247,34 @@ public sealed class ExamResourcesController : ApiControllerBase
             await database.CopyToAsync(stream, cancellationToken);
         }
 
+        string? endpointSpecPath = null;
+        if (endpointSpec is not null)
+        {
+            endpointSpecPath = Path.Combine(dataRoot, "endpoint-spec.json");
+            await using var stream = System.IO.File.Create(endpointSpecPath);
+            await endpointSpec.CopyToAsync(stream, cancellationToken);
+        }
+
+        string? environmentPath = null;
+        if (environment is not null)
+        {
+            environmentPath = Path.Combine(dataRoot, "environment.json");
+            await using var stream = System.IO.File.Create(environmentPath);
+            await environment.CopyToAsync(stream, cancellationToken);
+        }
+
         exam.CollectionFilePath = collectionPath;
         if (databasePath is not null)
         {
             exam.DatabaseFilePath = databasePath;
+        }
+        if (endpointSpecPath is not null)
+        {
+            exam.EndpointSpecFilePath = endpointSpecPath;
+        }
+        if (environmentPath is not null)
+        {
+            exam.EnvironmentFilePath = environmentPath;
         }
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -214,6 +284,8 @@ public sealed class ExamResourcesController : ApiControllerBase
             ExamId = exam.Id,
             CollectionFilePath = exam.CollectionFilePath ?? collectionPath,
             DatabaseFilePath = exam.DatabaseFilePath,
+            EndpointSpecFilePath = exam.EndpointSpecFilePath,
+            EnvironmentFilePath = exam.EnvironmentFilePath,
             UpdatedAt = DateTime.UtcNow
         });
     }

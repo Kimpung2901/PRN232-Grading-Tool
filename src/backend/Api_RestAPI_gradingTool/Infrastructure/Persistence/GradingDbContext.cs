@@ -22,6 +22,10 @@ public partial class GradingDbContext : DbContext
 
     public virtual DbSet<Semester> Semesters { get; set; }
 
+    public virtual DbSet<GradingJob> GradingJobs { get; set; }
+
+    public virtual DbSet<RunLog> RunLogs { get; set; }
+
     public virtual DbSet<Submission> Submissions { get; set; }
 
     public virtual DbSet<TestCase> TestCases { get; set; }
@@ -54,7 +58,16 @@ public partial class GradingDbContext : DbContext
                 .HasPrecision(0)
                 .HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.DatabaseFilePath).HasMaxLength(500);
+            entity.Property(e => e.EndpointSpecFilePath).HasMaxLength(500);
+            entity.Property(e => e.EnvironmentFilePath).HasMaxLength(500);
             entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.StudentDbConnection).HasMaxLength(1000);
+            entity.Property(e => e.HealthPath).HasMaxLength(200);
+            entity.Property(e => e.SwaggerPath).HasMaxLength(200);
+            entity.Property(e => e.SqlCmdServer).HasMaxLength(200);
+            entity.Property(e => e.SqlCmdUser).HasMaxLength(200);
+            entity.Property(e => e.SqlCmdPassword).HasMaxLength(200);
+            entity.Property(e => e.NewmanExtraArgs).HasMaxLength(1000);
 
             entity.HasOne(d => d.Session).WithMany(p => p.Exams)
                 .HasForeignKey(d => d.SessionId)
@@ -83,6 +96,35 @@ public partial class GradingDbContext : DbContext
                 .HasPrecision(0)
                 .HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<GradingJob>(entity =>
+        {
+            entity.HasIndex(e => e.SubmissionId, "IX_GradingJobs_SubmissionId");
+
+            entity.Property(e => e.CreatedAt)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.LastError).HasMaxLength(2000);
+
+            entity.HasOne(d => d.Submission).WithMany(p => p.GradingJobs)
+                .HasForeignKey(d => d.SubmissionId)
+                .HasConstraintName("FK_GradingJobs_Submissions");
+        });
+
+        modelBuilder.Entity<RunLog>(entity =>
+        {
+            entity.HasIndex(e => e.JobId, "IX_RunLogs_JobId");
+
+            entity.Property(e => e.CreatedAt)
+                .HasPrecision(0)
+                .HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.FilePath).HasMaxLength(1000);
+            entity.Property(e => e.Type).HasMaxLength(100);
+
+            entity.HasOne(d => d.Job).WithMany(p => p.RunLogs)
+                .HasForeignKey(d => d.JobId)
+                .HasConstraintName("FK_RunLogs_GradingJobs");
         });
 
         modelBuilder.Entity<Submission>(entity =>

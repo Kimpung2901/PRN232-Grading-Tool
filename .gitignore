@@ -2,6 +2,7 @@
 bin/
 obj/
 .vs/
+.dotnet/
 *.user
 *.suo
 *.userosscache
@@ -19,3 +20,11 @@ dist/
 data/
 logs/
 *.bak
+
+# Runner generated data
+src/backend/Api_RestAPI_gradingTool/Runner/submissions/*
+!src/backend/Api_RestAPI_gradingTool/Runner/submissions/.gitkeep
+src/backend/Api_RestAPI_gradingTool/Runner/workspace/*
+!src/backend/Api_RestAPI_gradingTool/Runner/workspace/.gitkeep
+src/backend/Api_RestAPI_gradingTool/Runner/reports/*
+!src/backend/Api_RestAPI_gradingTool/Runner/reports/.gitkeep

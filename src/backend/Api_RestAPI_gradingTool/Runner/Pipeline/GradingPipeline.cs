@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using System.Xml.Linq;
 using Runner.Models;
 
 namespace Runner.Pipeline;
@@ -34,6 +35,7 @@ public sealed class GradingPipeline
         var runLogPath = Path.Combine(reportsRoot, "run.log");
         var newmanLogPath = Path.Combine(reportsRoot, "newman.log");
         var reportJsonPath = Path.Combine(reportsRoot, "report.json");
+        var resultJsonPath = Path.Combine(reportsRoot, "result.json");
 
         await File.WriteAllTextAsync(buildLogPath, string.Empty, cancellationToken);
         await File.WriteAllTextAsync(runLogPath, string.Empty, cancellationToken);
@@ -41,7 +43,7 @@ public sealed class GradingPipeline
 
         Process? apiProcess = null;
         string? extractedWorkspace = null;
-        var output = new PipelineConsoleOutput();
+        var output = CreateInitialOutput(buildLogPath, runLogPath, newmanLogPath, reportJsonPath, resultJsonPath);
 
         try
         {
@@ -54,6 +56,7 @@ public sealed class GradingPipeline
             var projectPath = FindProjectFile(extractedWorkspace);
 
             output.BuildLog = await _buildService.BuildAsync(projectPath, buildLogPath, cancellationToken);
+            output.BuildSucceeded = true;
 
             apiProcess = await _runApiService.StartAsync(projectPath, DefaultApiPort, runLogPath, cancellationToken);
             await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
@@ -64,27 +67,53 @@ public sealed class GradingPipeline
             }
 
             await _healthCheckService.EnsureApiReadyAsync(DefaultApiPort, cancellationToken);
-            _ = await _newmanService.RunAsync(newmanCommand, collectionPath, reportJsonPath, newmanLogPath, cancellationToken);
+            output.ApiStarted = true;
+
+            var newmanResult = await _newmanService.RunAsync(newmanCommand, collectionPath, reportJsonPath, newmanLogPath, cancellationToken);
+            output.NewmanLog = newmanResult.LogContent;
+            output.TestRunCompleted = true;
 
             output.Results = await _reportParser.ParseAsync(reportJsonPath, cancellationToken);
+            output.Summary = ResultSummaryFactory.Create(output.Results);
+            output.HasFailedAssertions = output.Summary.AssertionsFailed > 0;
             output.RunLog = await SafeReadFileAsync(runLogPath, cancellationToken);
+            output.Status = output.HasFailedAssertions ? "completed_with_failures" : "completed";
 
+            if (newmanResult.ExitCode != 0)
+            {
+                output.Error = "TEST_RUN_FAILED";
+                output.ErrorMessage = "Newman completed with failed assertions.";
+            }
+
+            await WriteResultFileAsync(output, resultJsonPath, cancellationToken);
             await WriteConsoleOutputAsync(output, cancellationToken);
         }
         catch (PipelineException ex)
         {
+            output.Status = "failed";
             output.Error = ex.ErrorCode;
             output.ErrorMessage = ex.Message;
             output.BuildLog = await SafeReadFileAsync(buildLogPath, cancellationToken);
             output.RunLog = await SafeReadFileAsync(runLogPath, cancellationToken);
+            output.NewmanLog = await SafeReadFileAsync(newmanLogPath, cancellationToken);
+            output.Results = await TryParseResultsAsync(reportJsonPath, cancellationToken);
+            output.Summary = ResultSummaryFactory.Create(output.Results);
+            output.HasFailedAssertions = output.Summary.AssertionsFailed > 0;
+            await WriteResultFileAsync(output, resultJsonPath, cancellationToken);
             await WriteConsoleOutputAsync(output, cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            output.Status = "failed";
             output.Error = "TEST_RUN_FAILED";
-            output.ErrorMessage = "Unexpected pipeline failure.";
+            output.ErrorMessage = ex.Message;
             output.BuildLog = await SafeReadFileAsync(buildLogPath, cancellationToken);
             output.RunLog = await SafeReadFileAsync(runLogPath, cancellationToken);
+            output.NewmanLog = await SafeReadFileAsync(newmanLogPath, cancellationToken);
+            output.Results = await TryParseResultsAsync(reportJsonPath, cancellationToken);
+            output.Summary = ResultSummaryFactory.Create(output.Results);
+            output.HasFailedAssertions = output.Summary.AssertionsFailed > 0;
+            await WriteResultFileAsync(output, resultJsonPath, cancellationToken);
             await WriteConsoleOutputAsync(output, cancellationToken);
         }
         finally
@@ -117,7 +146,70 @@ public sealed class GradingPipeline
             throw new PipelineException("BUILD_FAILED", "No .csproj file found in submission.");
         }
 
-        return projectFiles[0];
+        var candidates = projectFiles
+            .Select(CreateProjectCandidate)
+            .OrderByDescending(x => x.Score)
+            .ThenBy(x => x.Path.Length)
+            .ToList();
+
+        var bestCandidate = candidates.FirstOrDefault();
+        if (bestCandidate is null || bestCandidate.Score <= 0)
+        {
+            throw new PipelineException("API_START_FAILED", "Could not determine a runnable API project from the submission.");
+        }
+
+        return bestCandidate.Path;
+    }
+
+    private static ProjectCandidate CreateProjectCandidate(string projectPath)
+    {
+        try
+        {
+            var document = XDocument.Load(projectPath);
+            var projectElement = document.Root;
+
+            var sdk = projectElement?.Attribute("Sdk")?.Value ?? string.Empty;
+            var propertyGroups = projectElement?.Elements("PropertyGroup").ToList() ?? [];
+            var outputType = propertyGroups
+                .Elements("OutputType")
+                .Select(x => x.Value.Trim())
+                .FirstOrDefault() ?? string.Empty;
+            var assemblyName = propertyGroups
+                .Elements("AssemblyName")
+                .Select(x => x.Value.Trim())
+                .FirstOrDefault() ?? Path.GetFileNameWithoutExtension(projectPath);
+
+            var score = 0;
+
+            if (sdk.Contains("Microsoft.NET.Sdk.Web", StringComparison.OrdinalIgnoreCase))
+            {
+                score += 1000;
+            }
+
+            if (outputType.Equals("Exe", StringComparison.OrdinalIgnoreCase) ||
+                outputType.Equals("WinExe", StringComparison.OrdinalIgnoreCase))
+            {
+                score += 500;
+            }
+
+            if (File.Exists(Path.Combine(Path.GetDirectoryName(projectPath)!, "Program.cs")))
+            {
+                score += 200;
+            }
+
+            var nameSignals = new[] { "api", "web", "service", "host", "presentation" };
+            if (nameSignals.Any(signal => assemblyName.Contains(signal, StringComparison.OrdinalIgnoreCase)) ||
+                nameSignals.Any(signal => projectPath.Contains(signal, StringComparison.OrdinalIgnoreCase)))
+            {
+                score += 100;
+            }
+
+            return new ProjectCandidate(projectPath, score);
+        }
+        catch
+        {
+            return new ProjectCandidate(projectPath, 0);
+        }
     }
 
     private static async Task<string> SafeReadFileAsync(string filePath, CancellationToken cancellationToken)
@@ -134,6 +226,23 @@ public sealed class GradingPipeline
             FileShare.ReadWrite);
         using var reader = new StreamReader(stream);
         return await reader.ReadToEndAsync(cancellationToken);
+    }
+
+    private async Task<List<TestOutcome>> TryParseResultsAsync(string reportPath, CancellationToken cancellationToken)
+    {
+        if (!File.Exists(reportPath))
+        {
+            return [];
+        }
+
+        try
+        {
+            return await _reportParser.ParseAsync(reportPath, cancellationToken);
+        }
+        catch
+        {
+            return [];
+        }
     }
 
     private static async Task StopApiProcessAsync(Process? apiProcess)
@@ -162,12 +271,40 @@ public sealed class GradingPipeline
 
     private static async Task WriteConsoleOutputAsync(PipelineConsoleOutput output, CancellationToken cancellationToken)
     {
-        var json = JsonSerializer.Serialize(output, new JsonSerializerOptions
+        var json = SerializeOutput(output);
+        await Console.Out.WriteLineAsync(json.AsMemory(), cancellationToken);
+    }
+
+    private static async Task WriteResultFileAsync(PipelineConsoleOutput output, string resultJsonPath, CancellationToken cancellationToken)
+    {
+        await File.WriteAllTextAsync(resultJsonPath, SerializeOutput(output), cancellationToken);
+    }
+
+    private static string SerializeOutput(PipelineConsoleOutput output)
+    {
+        return JsonSerializer.Serialize(output, new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
-
-        await Console.Out.WriteLineAsync(json.AsMemory(), cancellationToken);
     }
+
+    private static PipelineConsoleOutput CreateInitialOutput(
+        string buildLogPath,
+        string runLogPath,
+        string newmanLogPath,
+        string reportPath,
+        string resultPath)
+    {
+        return new PipelineConsoleOutput
+        {
+            BuildLogPath = buildLogPath,
+            RunLogPath = runLogPath,
+            NewmanLogPath = newmanLogPath,
+            ReportPath = reportPath,
+            ResultPath = resultPath
+        };
+    }
+
+    private sealed record ProjectCandidate(string Path, int Score);
 }

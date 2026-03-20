@@ -2,7 +2,7 @@ namespace Runner.Pipeline;
 
 public sealed class NewmanService
 {
-    public async Task<string> RunAsync(
+    public async Task<NewmanExecutionResult> RunAsync(
         string newmanCommand,
         string collectionPath,
         string reportPath,
@@ -19,11 +19,10 @@ public sealed class NewmanService
             newmanLogPath,
             cancellationToken: cancellationToken);
 
-        if (result.ExitCode != 0)
+        return new NewmanExecutionResult
         {
-            throw new PipelineException("TEST_RUN_FAILED", $"Newman test run failed. {result.CombinedOutput}");
-        }
-
-        return await File.ReadAllTextAsync(newmanLogPath, cancellationToken);
+            ExitCode = result.ExitCode,
+            LogContent = await File.ReadAllTextAsync(newmanLogPath, cancellationToken)
+        };
     }
 }

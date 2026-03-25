@@ -22,7 +22,7 @@ public sealed class RunApiService
         {
             var process = ProcessRunner.StartLongRunningProcess(
                 "dotnet",
-                $"run --no-build --project \"{projectPath}\"",
+                $"run --no-build --no-launch-profile --project \"{projectPath}\"",
                 workingDirectory,
                 runLogPath,
                 environmentVariables);

@@ -17,6 +17,7 @@ public sealed class GradingPipeline
     private readonly ReportParser _reportParser = new();
     private readonly CleanupService _cleanupService = new();
     private readonly EnvironmentSetupService _environmentSetupService = new();
+    private readonly DatabaseSetupService _databaseSetupService = new();
 
     public async Task RunPipeline(CancellationToken cancellationToken = default)
     {
@@ -38,6 +39,15 @@ public sealed class GradingPipeline
         {
             var probeLogPath = Path.Combine(reportsRoot, "newman.setup.log");
             var newmanCommand = await _environmentSetupService.EnsureNewmanInstalledAsync(runnerRoot, probeLogPath, cancellationToken);
+
+            var databaseRoot = Path.Combine(runnerRoot, "database");
+            var seedScript = DatabaseSetupService.FindSeedScript(databaseRoot);
+            var runnerConnStr = DatabaseSetupService.ReadRunnerConnectionString(databaseRoot);
+            if (seedScript is not null && runnerConnStr is not null)
+            {
+                var dbLogPath = Path.Combine(reportsRoot, "db.log");
+                await _databaseSetupService.SeedAsync(runnerConnStr, seedScript, dbLogPath, cancellationToken);
+            }
             var collectionPath = ResolveSingleFile(collectionsRoot, "*.postman_collection.json", "Postman collection");
             var submissionZipPaths = Directory.GetFiles(submissionsRoot, "*.zip", SearchOption.TopDirectoryOnly)
                 .OrderBy(Path.GetFileName)
@@ -469,6 +479,12 @@ public sealed class GradingPipeline
         await Console.Out.WriteLineAsync(
             $"[TestResult] {output.SubmissionName} ({output.ElapsedSeconds:F1}s):{Environment.NewLine}{json}".AsMemory(),
             cancellationToken);
+    }
+
+    private static string SanitizeDbName(string name)
+    {
+        var sanitized = new string(name.Select(ch => char.IsLetterOrDigit(ch) || ch == '_' ? ch : '_').ToArray());
+        return sanitized.Length > 50 ? sanitized[..50] : sanitized;
     }
 
     private static string SanitizeFileName(string fileName)

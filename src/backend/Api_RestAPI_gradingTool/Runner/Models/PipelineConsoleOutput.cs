@@ -2,6 +2,10 @@ namespace Runner.Models;
 
 public sealed class PipelineConsoleOutput
 {
+    public string SubmissionName { get; set; } = string.Empty;
+
+    public string SubmissionFilePath { get; set; } = string.Empty;
+
     public string Status { get; set; } = "failed";
 
     public string? Error { get; set; }
@@ -35,4 +39,6 @@ public sealed class PipelineConsoleOutput
     public string ReportPath { get; set; } = string.Empty;
 
     public string ResultPath { get; set; } = string.Empty;
+
+    public double ElapsedSeconds { get; set; }
 }

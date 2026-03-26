@@ -25,4 +25,12 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="data\**\*.cs" />
+    <Content Remove="data\**\*" />
+    <EmbeddedResource Remove="data\**\*" />
+    <None Remove="data\**\*" />
+    <RazorCompile Remove="data\**\*.cshtml" />
+  </ItemGroup>
+
 </Project>

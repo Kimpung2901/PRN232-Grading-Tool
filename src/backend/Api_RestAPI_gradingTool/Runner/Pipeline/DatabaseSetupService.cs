@@ -38,6 +38,7 @@ public sealed class DatabaseSetupService
         return null;
     }
 
+
     /// <summary>
     /// Drops and recreates the target database, then runs the seed script.
     /// Called once before grading starts to give all submissions a clean, identical dataset.

@@ -1,26 +1,22 @@
 using Api_RestAPI_gradingTool.Contracts.Management;
-using Infrastructure;
-using Infrastructure.Persistence;
+using Application.Contracts.Management;
+using Application.Contracts.Common;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Api_RestAPI_gradingTool.Validation;
 
 namespace Api_RestAPI_gradingTool.Controllers.Management;
 
-[Route("api")]
+[Route("api/exams")]
 public sealed class ExamsController : ApiControllerBase
 {
-    private const int MaxPageSize = 100;
-    private readonly GradingDbContext _db;
+    private readonly IExamService _service;
 
-    public ExamsController(GradingDbContext db)
+    public ExamsController(IExamService service)
     {
-        _db = db;
+        _service = service;
     }
 
-    [HttpGet("exam-sessions/{sessionId:int}/exams")]
-    public async Task<ActionResult<PagedResult<ExamDto>>> ListBySession(
-        int sessionId,
+    [HttpGet]
+    public async Task<ActionResult<PagedResult<ExamDto>>> List(
         [FromQuery] string? search,
         [FromQuery] string? sort,
         [FromQuery] string? order,
@@ -28,242 +24,119 @@ public sealed class ExamsController : ApiControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        if (!await _db.ExamSessions.AnyAsync(s => s.Id == sessionId, cancellationToken))
-        {
-            return ProblemNotFound("Exam session not found.");
-        }
-
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 1;
-        if (pageSize > MaxPageSize) pageSize = MaxPageSize;
-
-        IQueryable<Exam> query = _db.Exams.AsNoTracking()
-            .Where(e => e.SessionId == sessionId);
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var term = $"%{search.Trim()}%";
-            query = query.Where(e => EF.Functions.Like(e.Name, term));
-        }
-
-        query = ApplySort(query, sort, order);
-
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        var result = await _service.ListAsync(search, sort, order, page, pageSize, cancellationToken);
+        var items = result.Items
             .Select(e => new ExamDto
             {
-                Id = e.Id,
-                SessionId = e.SessionId,
-                Name = e.Name,
-                DatabaseFilePath = e.DatabaseFilePath,
-                CollectionFilePath = e.CollectionFilePath,
-                CreatedAt = e.CreatedAt
+                ExamId = e.ExamId,
+                ExamName = e.ExamName,
+                SqlScriptPath = e.SqlScriptPath
             })
-            .ToArrayAsync(cancellationToken);
+            .ToArray();
 
         return Ok(new PagedResult<ExamDto>
         {
-            Page = page,
-            PageSize = pageSize,
-            Total = total,
+            Page = result.Page,
+            PageSize = result.PageSize,
+            Total = result.Total,
             Items = items
         });
     }
 
-    [HttpGet("exams/{id:int}")]
+    [HttpGet("{examId:int}")]
     public async Task<ActionResult<ExamDto>> GetById(
-        int id,
+        int examId,
         CancellationToken cancellationToken = default)
     {
-        var exam = await _db.Exams.AsNoTracking()
-            .Where(e => e.Id == id)
-            .Select(e => new ExamDto
-            {
-                Id = e.Id,
-                SessionId = e.SessionId,
-                Name = e.Name,
-                DatabaseFilePath = e.DatabaseFilePath,
-                CollectionFilePath = e.CollectionFilePath,
-                CreatedAt = e.CreatedAt,
-                TestCasesCount = e.TestCases.Count,
-                SubmissionsCount = e.Submissions.Count
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+        var entity = await _service.GetByIdAsync(examId, cancellationToken);
 
-        if (exam is null)
+        if (entity is null)
         {
             return ProblemNotFound("Exam not found.");
         }
 
-        return Ok(exam);
+        return Ok(new ExamDto
+        {
+            ExamId = entity.ExamId,
+            ExamName = entity.ExamName,
+            SqlScriptPath = entity.SqlScriptPath
+        });
     }
 
-    [HttpPost("exam-sessions/{sessionId:int}/exams")]
+    [HttpPost]
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<ExamDto>> Create(
-        int sessionId,
-        [FromBody] CreateExamRequest request,
+        [FromForm] CreateExamRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!await _db.ExamSessions.AnyAsync(s => s.Id == sessionId, cancellationToken))
+        if (request.SqlFile is not null && request.SqlFile.Length == 0)
         {
-            return ProblemNotFound("Exam session not found.");
+            return ProblemBadRequest("SQL script file is empty.");
         }
 
-        var nameError = NameRules.Validate(request.Name, 3, 200);
-        if (nameError is not null)
+        await using var stream = request.SqlFile?.OpenReadStream();
+        var result = await _service.CreateAsync(request.ExamName, stream, request.SqlFile?.FileName, cancellationToken);
+        if (!result.Success)
         {
-            return ProblemBadRequest(nameError);
+            return MapError(result);
         }
-
-        var normalizedName = request.Name.Trim().ToLowerInvariant();
-        var nameExists = await _db.Exams
-            .AnyAsync(e => e.SessionId == sessionId && e.Name.ToLower() == normalizedName, cancellationToken);
-        if (nameExists)
-        {
-            return ProblemConflict("Exam name already exists in this session.");
-        }
-
-        var entity = new Exam
-        {
-            SessionId = sessionId,
-            Name = request.Name.Trim()
-        };
-
-        _db.Exams.Add(entity);
-        await _db.SaveChangesAsync(cancellationToken);
 
         var dto = new ExamDto
         {
-            Id = entity.Id,
-            SessionId = entity.SessionId,
-            Name = entity.Name,
-            DatabaseFilePath = entity.DatabaseFilePath,
-            CollectionFilePath = entity.CollectionFilePath,
-            CreatedAt = entity.CreatedAt
+            ExamId = result.Data!.ExamId,
+            ExamName = result.Data!.ExamName,
+            SqlScriptPath = result.Data!.SqlScriptPath
         };
 
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, dto);
+        return CreatedAtAction(nameof(GetById), new { examId = result.Data!.ExamId }, dto);
     }
 
-    [HttpPut("exams/{id:int}")]
-    public async Task<ActionResult<ExamDto>> Update(
-        int id,
-        [FromBody] UpdateExamRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
-        if (exam is null)
-        {
-            return ProblemNotFound("Exam not found.");
-        }
-
-        var nameError = NameRules.Validate(request.Name, 3, 200);
-        if (nameError is not null)
-        {
-            return ProblemBadRequest(nameError);
-        }
-
-        var normalizedName = request.Name.Trim().ToLowerInvariant();
-        var nameExists = await _db.Exams
-            .AnyAsync(e => e.SessionId == exam.SessionId && e.Id != id && e.Name.ToLower() == normalizedName, cancellationToken);
-        if (nameExists)
-        {
-            return ProblemConflict("Exam name already exists in this session.");
-        }
-
-        exam.Name = request.Name.Trim();
-        await _db.SaveChangesAsync(cancellationToken);
-
-        var dto = new ExamDto
-        {
-            Id = exam.Id,
-            SessionId = exam.SessionId,
-            Name = exam.Name,
-            DatabaseFilePath = exam.DatabaseFilePath,
-            CollectionFilePath = exam.CollectionFilePath,
-            CreatedAt = exam.CreatedAt
-        };
-
-        return Ok(dto);
-    }
-
-    [HttpPatch("exams/{id:int}")]
+    [HttpPatch("{examId:int}")]
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<ExamDto>> Patch(
-        int id,
-        [FromBody] PatchExamRequest request,
+        int examId,
+        [FromForm] PatchExamRequest request,
         CancellationToken cancellationToken = default)
     {
-        var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
-        if (exam is null)
+        if (request.SqlFile is not null && request.SqlFile.Length == 0)
         {
-            return ProblemNotFound("Exam not found.");
+            return ProblemBadRequest("SQL script file is empty.");
         }
 
-        var newName = request.Name ?? exam.Name;
-        var nameError = NameRules.Validate(newName, 3, 200);
-        if (nameError is not null)
+        await using var stream = request.SqlFile?.OpenReadStream();
+        var result = await _service.PatchAsync(examId, request.ExamName, stream, request.SqlFile?.FileName, cancellationToken);
+        if (!result.Success)
         {
-            return ProblemBadRequest(nameError);
+            return MapError(result);
         }
 
-        var normalizedName = newName.Trim().ToLowerInvariant();
-        var nameExists = await _db.Exams
-            .AnyAsync(e => e.SessionId == exam.SessionId && e.Id != id && e.Name.ToLower() == normalizedName, cancellationToken);
-        if (nameExists)
+        return Ok(new ExamDto
         {
-            return ProblemConflict("Exam name already exists in this session.");
-        }
-
-        exam.Name = newName.Trim();
-        await _db.SaveChangesAsync(cancellationToken);
-
-        var dto = new ExamDto
-        {
-            Id = exam.Id,
-            SessionId = exam.SessionId,
-            Name = exam.Name,
-            DatabaseFilePath = exam.DatabaseFilePath,
-            CollectionFilePath = exam.CollectionFilePath,
-            CreatedAt = exam.CreatedAt
-        };
-
-        return Ok(dto);
+            ExamId = result.Data!.ExamId,
+            ExamName = result.Data!.ExamName,
+            SqlScriptPath = result.Data!.SqlScriptPath
+        });
     }
 
-    [HttpDelete("exams/{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+    [HttpDelete("{examId:int}")]
+    public async Task<IActionResult> Delete(int examId, CancellationToken cancellationToken = default)
     {
-        var exam = await _db.Exams.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
-        if (exam is null)
+        var result = await _service.DeleteAsync(examId, cancellationToken);
+        if (!result.Success)
         {
-            return ProblemNotFound("Exam not found.");
+            return MapError(result);
         }
-
-        var hasSubmissions = await _db.Submissions.AnyAsync(s => s.ExamId == id, cancellationToken);
-        var hasTestCases = await _db.TestCases.AnyAsync(t => t.ExamId == id, cancellationToken);
-        if (hasSubmissions || hasTestCases)
-        {
-            return ProblemConflict("Cannot delete exam with submissions or test cases.");
-        }
-
-        _db.Exams.Remove(exam);
-        await _db.SaveChangesAsync(cancellationToken);
 
         return NoContent();
     }
 
-    private static IQueryable<Exam> ApplySort(IQueryable<Exam> query, string? sort, string? order)
+    private ActionResult MapError<T>(ServiceResult<T> result)
     {
-        var isDesc = string.Equals(order, "desc", StringComparison.OrdinalIgnoreCase);
-        return (sort ?? "id").ToLowerInvariant() switch
+        return result.ErrorType switch
         {
-            "name" => isDesc ? query.OrderByDescending(e => e.Name) : query.OrderBy(e => e.Name),
-            "createdat" => isDesc ? query.OrderByDescending(e => e.CreatedAt) : query.OrderBy(e => e.CreatedAt),
-            "id" => isDesc ? query.OrderByDescending(e => e.Id) : query.OrderBy(e => e.Id),
-            _ => isDesc ? query.OrderByDescending(e => e.Id) : query.OrderBy(e => e.Id)
+            ServiceErrorType.NotFound => ProblemNotFound(result.Error ?? "Not found."),
+            ServiceErrorType.Conflict => ProblemConflict(result.Error ?? "Conflict."),
+            _ => ProblemBadRequest(result.Error ?? "Bad request.")
         };
     }
-
 }

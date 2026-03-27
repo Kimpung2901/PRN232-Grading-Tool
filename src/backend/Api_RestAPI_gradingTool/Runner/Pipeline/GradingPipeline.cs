@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Xml.Linq;
 using Runner.Models;
@@ -455,31 +456,44 @@ public sealed class GradingPipeline
         output.ElapsedSeconds = stopwatch.Elapsed.TotalSeconds;
 
         await WriteResultFileAsync(output, resultJsonPath, cancellationToken);
-        await PrintTestResultPayloadAsync(output, resultJsonPath, cancellationToken);
+        await PostTestResultAsync(output, resultJsonPath, cancellationToken);
         return output;
     }
 
-    private static async Task PrintTestResultPayloadAsync(
+    private const string GradingApiBaseUrl = "http://localhost:5069";
+
+    private static readonly HttpClient _httpClient = new();
+
+    private static async Task PostTestResultAsync(
         PipelineConsoleOutput output, string resultFilePath, CancellationToken cancellationToken)
     {
         var payload = new TestResultPayload
         {
             StudentName = output.SubmissionName,
-            Score = output.Summary.ScorePercent.ToString("F2"),
+            Score = (int)Math.Round(output.Summary.ScorePercent),
             Status = output.BuildSucceeded ? "build ok" : "build false",
             ReportFilePath = resultFilePath
         };
 
-        var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+        try
         {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+            var response = await _httpClient.PostAsJsonAsync(
+                $"{GradingApiBaseUrl}/api/testresults",
+                payload,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+                cancellationToken);
 
-        // TODO: Replace with actual POST /testresults call when API is ready
-        await Console.Out.WriteLineAsync(
-            $"[TestResult] {output.SubmissionName} ({output.ElapsedSeconds:F1}s):{Environment.NewLine}{json}".AsMemory(),
-            cancellationToken);
+            var statusLabel = response.IsSuccessStatusCode ? "OK" : $"HTTP {(int)response.StatusCode}";
+            await Console.Out.WriteLineAsync(
+                $"[TestResult] {output.SubmissionName} ({output.ElapsedSeconds:F1}s) → score={payload.Score}% status={payload.Status} api={statusLabel}".AsMemory(),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            await Console.Out.WriteLineAsync(
+                $"[TestResult] {output.SubmissionName} ({output.ElapsedSeconds:F1}s) → score={payload.Score}% status={payload.Status} api=ERROR({ex.Message})".AsMemory(),
+                cancellationToken);
+        }
     }
 
     private static string SanitizeDbName(string name)

@@ -1,24 +1,18 @@
 using Api_RestAPI_gradingTool.Contracts.Management;
-using Infrastructure;
-using Infrastructure.Persistence;
+using Application.Contracts.Common;
+using Application.Contracts.Management;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Api_RestAPI_gradingTool.Validation;
 
 namespace Api_RestAPI_gradingTool.Controllers.Management;
 
 [Route("api")]
 public sealed class SubmissionsController : ApiControllerBase
 {
-    private const int MaxPageSize = 100;
-    private const long MaxSubmissionSizeBytes = 200 * 1024 * 1024;
-    private readonly GradingDbContext _db;
-    private readonly IWebHostEnvironment _env;
+    private readonly ISubmissionService _service;
 
-    public SubmissionsController(GradingDbContext db, IWebHostEnvironment env)
+    public SubmissionsController(ISubmissionService service)
     {
-        _db = db;
-        _env = env;
+        _service = service;
     }
 
     [HttpGet("exams/{examId:int}/submissions")]
@@ -31,49 +25,29 @@ public sealed class SubmissionsController : ApiControllerBase
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
-        if (!await _db.Exams.AnyAsync(e => e.Id == examId, cancellationToken))
+        var result = await _service.ListByExamAsync(examId, search, sort, order, page, pageSize, cancellationToken);
+        if (!result.Success)
         {
-            return ProblemNotFound("Exam not found.");
+            return MapError(result);
         }
 
-        if (page < 1) page = 1;
-        if (pageSize < 1) pageSize = 1;
-        if (pageSize > MaxPageSize) pageSize = MaxPageSize;
-
-        IQueryable<Submission> query = _db.Submissions.AsNoTracking()
-            .Where(s => s.ExamId == examId);
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var term = $"%{search.Trim()}%";
-            query = query.Where(s => EF.Functions.Like(s.StudentName, term) || EF.Functions.Like(s.FileName, term));
-        }
-
-        query = ApplySort(query, sort, order);
-
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+        var items = result.Data!.Items
             .Select(s => new SubmissionDto
             {
                 Id = s.Id,
                 ExamId = s.ExamId,
                 StudentName = s.StudentName,
-                FileName = s.FileName,
+                StudentCode = s.StudentCode,
                 FilePath = s.FilePath,
-                SubmittedAt = s.SubmittedAt,
-                Status = s.Status,
-                TotalScore = s.TotalScore,
-                LastError = s.LastError
+                Status = s.Status
             })
-            .ToArrayAsync(cancellationToken);
+            .ToArray();
 
         return Ok(new PagedResult<SubmissionDto>
         {
-            Page = page,
-            PageSize = pageSize,
-            Total = total,
+            Page = result.Data!.Page,
+            PageSize = result.Data!.PageSize,
+            Total = result.Data!.Total,
             Items = items
         });
     }
@@ -81,143 +55,103 @@ public sealed class SubmissionsController : ApiControllerBase
     [HttpGet("submissions/{id:int}")]
     public async Task<ActionResult<SubmissionDto>> GetById(int id, CancellationToken cancellationToken = default)
     {
-        var submission = await _db.Submissions.AsNoTracking()
-            .Where(s => s.Id == id)
-            .Select(s => new SubmissionDto
-            {
-                Id = s.Id,
-                ExamId = s.ExamId,
-                StudentName = s.StudentName,
-                FileName = s.FileName,
-                FilePath = s.FilePath,
-                SubmittedAt = s.SubmittedAt,
-                Status = s.Status,
-                TotalScore = s.TotalScore,
-                LastError = s.LastError
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+        var submission = await _service.GetByIdAsync(id, cancellationToken);
 
         if (submission is null)
         {
             return ProblemNotFound("Submission not found.");
         }
 
-        return Ok(submission);
-    }
-
-    [HttpDelete("submissions/{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
-    {
-        var submission = await _db.Submissions.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
-        if (submission is null)
+        return Ok(new SubmissionDto
         {
-            return ProblemNotFound("Submission not found.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(submission.FilePath) && System.IO.File.Exists(submission.FilePath))
-        {
-            System.IO.File.Delete(submission.FilePath);
-        }
-
-        _db.Submissions.Remove(submission);
-        await _db.SaveChangesAsync(cancellationToken);
-
-        return NoContent();
+            Id = submission.Id,
+            ExamId = submission.ExamId,
+            StudentName = submission.StudentName,
+            StudentCode = submission.StudentCode,
+            FilePath = submission.FilePath,
+            Status = submission.Status
+        });
     }
 
     [HttpPost("exams/{examId:int}/submissions")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(MaxSubmissionSizeBytes)]
     public async Task<ActionResult<SubmissionDto>> Upload(
         int examId,
         [FromForm] SubmissionUploadRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!await _db.Exams.AnyAsync(e => e.Id == examId, cancellationToken))
-        {
-            return ProblemNotFound("Exam not found.");
-        }
-
-        var studentNameError = NameRules.Validate(request.StudentName, 3, 200, "StudentName");
-        if (studentNameError is not null)
-        {
-            return ProblemBadRequest(studentNameError);
-        }
-
         if (request.File is null || request.File.Length == 0)
         {
             return ProblemBadRequest("Submission file is required.");
         }
 
-        var ext = Path.GetExtension(request.File.FileName);
-        if (!IsAllowedArchive(ext))
+        await using var stream = request.File.OpenReadStream();
+        var result = await _service.UploadAsync(examId, request.StudentName, request.StudentCode, stream, request.File.FileName, cancellationToken);
+        if (!result.Success)
         {
-            return ProblemBadRequest("Submission file must be .zip or .rar.");
+            return MapError(result);
         }
 
-        if (request.File.Length > MaxSubmissionSizeBytes)
+        return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, new SubmissionDto
         {
-            return ProblemBadRequest("Submission file is too large.");
-        }
-
-        var entity = new Submission
-        {
-            ExamId = examId,
-            StudentName = request.StudentName.Trim(),
-            Status = 0,
-            TotalScore = 0,
-            LastError = null,
-            FileName = Path.GetFileName(request.File.FileName),
-            FilePath = string.Empty
-        };
-
-        _db.Submissions.Add(entity);
-        await _db.SaveChangesAsync(cancellationToken);
-
-        var dataRoot = Path.Combine(_env.ContentRootPath, "data", "submissions", entity.Id.ToString());
-        Directory.CreateDirectory(dataRoot);
-
-        var filePath = Path.Combine(dataRoot, entity.FileName);
-        await using (var stream = System.IO.File.Create(filePath))
-        {
-            await request.File.CopyToAsync(stream, cancellationToken);
-        }
-
-        entity.FilePath = filePath;
-        await _db.SaveChangesAsync(cancellationToken);
-
-        var dto = new SubmissionDto
-        {
-            Id = entity.Id,
-            ExamId = entity.ExamId,
-            StudentName = entity.StudentName,
-            FileName = entity.FileName,
-            FilePath = entity.FilePath,
-            SubmittedAt = entity.SubmittedAt,
-            Status = entity.Status,
-            TotalScore = entity.TotalScore,
-            LastError = entity.LastError
-        };
-
-        return CreatedAtAction(nameof(GetById), new { id = entity.Id }, dto);
+            Id = result.Data!.Id,
+            ExamId = result.Data!.ExamId,
+            StudentName = result.Data!.StudentName,
+            StudentCode = result.Data!.StudentCode,
+            FilePath = result.Data!.FilePath,
+            Status = result.Data!.Status
+        });
     }
 
-    private static IQueryable<Submission> ApplySort(IQueryable<Submission> query, string? sort, string? order)
+    [HttpPatch("submissions/{id:int}")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<SubmissionDto>> Patch(
+        int id,
+        [FromForm] PatchSubmissionRequest request,
+        CancellationToken cancellationToken = default)
     {
-        var isDesc = string.Equals(order, "desc", StringComparison.OrdinalIgnoreCase);
-        return (sort ?? "submittedat").ToLowerInvariant() switch
+        if (request.File is not null && request.File.Length == 0)
         {
-            "studentname" => isDesc ? query.OrderByDescending(s => s.StudentName) : query.OrderBy(s => s.StudentName),
-            "submittedat" => isDesc ? query.OrderByDescending(s => s.SubmittedAt) : query.OrderBy(s => s.SubmittedAt),
-            "status" => isDesc ? query.OrderByDescending(s => s.Status) : query.OrderBy(s => s.Status),
-            "totalscore" => isDesc ? query.OrderByDescending(s => s.TotalScore) : query.OrderBy(s => s.TotalScore),
-            _ => isDesc ? query.OrderByDescending(s => s.SubmittedAt) : query.OrderBy(s => s.SubmittedAt)
-        };
+            return ProblemBadRequest("Submission file is empty.");
+        }
+
+        await using var stream = request.File?.OpenReadStream();
+        var result = await _service.PatchAsync(id, request.StudentName, request.StudentCode, stream, request.File?.FileName, cancellationToken);
+        if (!result.Success)
+        {
+            return MapError(result);
+        }
+
+        return Ok(new SubmissionDto
+        {
+            Id = result.Data!.Id,
+            ExamId = result.Data!.ExamId,
+            StudentName = result.Data!.StudentName,
+            StudentCode = result.Data!.StudentCode,
+            FilePath = result.Data!.FilePath,
+            Status = result.Data!.Status
+        });
     }
 
-    private static bool IsAllowedArchive(string? extension)
+    [HttpDelete("submissions/{id:int}")]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
-        return string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(extension, ".rar", StringComparison.OrdinalIgnoreCase);
+        var result = await _service.DeleteAsync(id, cancellationToken);
+        if (!result.Success)
+        {
+            return MapError(result);
+        }
+
+        return NoContent();
+    }
+
+    private ActionResult MapError<T>(ServiceResult<T> result)
+    {
+        return result.ErrorType switch
+        {
+            ServiceErrorType.NotFound => ProblemNotFound(result.Error ?? "Not found."),
+            ServiceErrorType.Conflict => ProblemConflict(result.Error ?? "Conflict."),
+            _ => ProblemBadRequest(result.Error ?? "Bad request.")
+        };
     }
 }

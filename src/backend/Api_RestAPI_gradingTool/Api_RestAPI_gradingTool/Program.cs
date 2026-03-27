@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Api_RestAPI_gradingTool.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -29,13 +31,21 @@ builder.Services.AddDbContext<Infrastructure.Persistence.GradingDbContext>(optio
 {
     options.UseSqlServer(connectionString);
 });
+builder.Services.AddScoped<Application.Contracts.Grading.IGradingDbContext>(sp =>
+    sp.GetRequiredService<Infrastructure.Persistence.GradingDbContext>());
+builder.Services.AddScoped<Application.Contracts.Grading.IRunnerStorage, Infrastructure.Runner.RunnerStorage>();
+
+builder.Services.AddScoped<Application.Contracts.Management.IExamService, Application.Services.ExamService>();
+builder.Services.AddScoped<Application.Contracts.Management.ITestCaseService, Application.Services.TestCaseService>();
+builder.Services.AddScoped<Application.Contracts.Management.ISubmissionService, Application.Services.SubmissionService>();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFE", p =>
         p.WithOrigins("http://localhost:5173")
          .AllowAnyHeader()
-         .AllowAnyMethod());
+         .AllowAnyMethod()
+         .AllowCredentials());
 });
 
 
@@ -54,5 +64,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TestHub>("/testHub");
 
 app.Run();

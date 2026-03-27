@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections.Generic;
 
 namespace Infrastructure;
@@ -11,17 +10,11 @@ public partial class Submission
 
     public string StudentName { get; set; } = null!;
 
+    public string StudentCode { get; set; } = null!;
+
     public string FilePath { get; set; } = null!;
 
-    public DateTime SubmittedAt { get; set; }
-
     public int Status { get; set; }
-
-    public decimal TotalScore { get; set; }
-
-    public string? LastError { get; set; }
-
-    public string FileName { get; set; } = null!;
 
     public virtual Exam Exam { get; set; } = null!;
 

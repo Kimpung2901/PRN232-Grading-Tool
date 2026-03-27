@@ -29,6 +29,13 @@ builder.Services.AddDbContext<Infrastructure.Persistence.GradingDbContext>(optio
 {
     options.UseSqlServer(connectionString);
 });
+builder.Services.AddScoped<Application.Contracts.Grading.IGradingDbContext>(sp =>
+    sp.GetRequiredService<Infrastructure.Persistence.GradingDbContext>());
+builder.Services.AddScoped<Application.Contracts.Grading.IRunnerStorage, Infrastructure.Runner.RunnerStorage>();
+
+builder.Services.AddScoped<Application.Contracts.Management.IExamService, Application.Services.ExamService>();
+builder.Services.AddScoped<Application.Contracts.Management.ITestCaseService, Application.Services.TestCaseService>();
+builder.Services.AddScoped<Application.Contracts.Management.ISubmissionService, Application.Services.SubmissionService>();
 
 builder.Services.AddCors(options =>
 {

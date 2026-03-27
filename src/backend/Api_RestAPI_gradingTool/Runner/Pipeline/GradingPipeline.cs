@@ -117,6 +117,7 @@ public sealed class GradingPipeline
         return files[0];
     }
 
+
     private static string ResolveStartupProject(IReadOnlyList<(string Path, string Guid)> projects, string startupGuid)
     {
         var match = projects.FirstOrDefault(p => p.Guid.Equals(startupGuid, StringComparison.OrdinalIgnoreCase));

@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Api_RestAPI_gradingTool.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -42,7 +44,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFE", p =>
         p.WithOrigins("http://localhost:5173")
          .AllowAnyHeader()
-         .AllowAnyMethod());
+         .AllowAnyMethod()
+         .AllowCredentials());
 });
 
 
@@ -61,5 +64,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<TestHub>("/testHub");
 
 app.Run();

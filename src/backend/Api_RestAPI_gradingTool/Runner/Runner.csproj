@@ -7,4 +7,22 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="workspace\**\*.cs" />
+    <Compile Remove="submissions\**\*" />
+    <Compile Remove="collections\**\*" />
+    <Compile Remove="reports\**\*" />
+    <Compile Remove=".tools\**\*" />
+    <EmbeddedResource Remove="workspace\**\*" />
+    <EmbeddedResource Remove="submissions\**\*" />
+    <EmbeddedResource Remove="collections\**\*" />
+    <EmbeddedResource Remove="reports\**\*" />
+    <EmbeddedResource Remove=".tools\**\*" />
+    <None Remove="workspace\**\*" />
+    <None Remove="submissions\**\*" />
+    <None Remove="collections\**\*" />
+    <None Remove="reports\**\*" />
+    <None Remove=".tools\**\*" />
+  </ItemGroup>
+
 </Project>

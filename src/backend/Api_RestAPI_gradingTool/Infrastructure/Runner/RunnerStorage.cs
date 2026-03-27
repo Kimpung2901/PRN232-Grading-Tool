@@ -14,12 +14,12 @@ public sealed class RunnerStorage : IRunnerStorage
 
     public async Task<RunnerFileInfo> SaveSubmissionAsync(string examName, int submissionId, string studentCode, Stream content, string originalFileName, CancellationToken cancellationToken)
     {
-        var submissionsRoot = Path.Combine(_runnerRoot, "submissions", SanitizePathSegment(examName));
+        var submissionsRoot = Path.Combine(_runnerRoot, "submissions");
         Directory.CreateDirectory(submissionsRoot);
 
         var extension = Path.GetExtension(originalFileName);
         var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-        var fileName = $"{submissionId}_{SanitizePathSegment(studentCode)}_{timestamp}{extension}";
+        var fileName = $"{SanitizePathSegment(examName)}_{submissionId}_{SanitizePathSegment(studentCode)}_{timestamp}{extension}";
         var fullPath = Path.Combine(submissionsRoot, fileName);
 
         await using (var stream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -37,10 +37,10 @@ public sealed class RunnerStorage : IRunnerStorage
 
     public async Task<RunnerFileInfo> SaveCollectionAsync(string examName, Stream content, string originalFileName, CancellationToken cancellationToken)
     {
-        var collectionsRoot = Path.Combine(_runnerRoot, "collections", SanitizePathSegment(examName));
+        var collectionsRoot = Path.Combine(_runnerRoot, "collections");
         Directory.CreateDirectory(collectionsRoot);
 
-        var fileName = "testcase.json";
+        var fileName = $"{SanitizePathSegment(examName)}.postman_collection.json";
         var fullPath = Path.Combine(collectionsRoot, fileName);
 
         await using (var stream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -58,10 +58,10 @@ public sealed class RunnerStorage : IRunnerStorage
 
     public async Task<RunnerFileInfo> SaveSqlScriptAsync(string examName, Stream content, string originalFileName, CancellationToken cancellationToken)
     {
-        var databaseRoot = Path.Combine(_runnerRoot, "database", SanitizePathSegment(examName));
+        var databaseRoot = Path.Combine(_runnerRoot, "database");
         Directory.CreateDirectory(databaseRoot);
 
-        var fileName = "seed.sql";
+        var fileName = $"{SanitizePathSegment(examName)}.seed.sql";
         var fullPath = Path.Combine(databaseRoot, fileName);
 
         await using (var stream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None))

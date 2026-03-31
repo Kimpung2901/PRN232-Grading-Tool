@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { ExamsService } from '../../../services/exams.service';
+import { SubmissionsService } from '../../../services/submissions.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import {
     ApexAxisChartSeries,
@@ -48,12 +50,44 @@ export type ChartOptions = {
     ],
 })
 export class DashboardComponent {
-    examCount = 12;
-    submissionCount = 145;
-    testCaseCount = 56;
+    examCount = 0;
+    submissionCount = 0;
+    testCaseCount = 0;
+    avgPassRate = 82; // Mock value
 
-    /** Mock average pass rate (% completed submissions treated as pass). */
-    avgPassRate = 82;
+    constructor(
+        private examsService: ExamsService,
+        private submissionsService: SubmissionsService
+    ) {}
+
+    ngOnInit(): void {
+        this.loadStats();
+    }
+
+    loadStats(): void {
+        // Fetch exams count
+        this.examsService.getExams({ page: 1, pageSize: 1 }).subscribe({
+            next: (res) => {
+                this.examCount = res.total || 0;
+                this.updateStatValue('Exams', String(this.examCount));
+            }
+        });
+
+        // Fetch submissions count (defaulting to exam 1 for general count if no global API)
+        this.submissionsService.getSubmissions({ examId: 1, page: 1, pageSize: 1 }).subscribe({
+            next: (res) => {
+                this.submissionCount = res.total || 0;
+                this.updateStatValue('Submissions', String(this.submissionCount));
+            }
+        });
+    }
+
+    private updateStatValue(title: string, value: string): void {
+        const stat = this.stats.find(s => s.title === title);
+        if (stat) {
+            stat.value = value;
+        }
+    }
 
     stats = [
         {

@@ -148,15 +148,43 @@
                     <span class="text-xs text-center text-gray-500 mt-1 dark:text-gray-400">See test cases execution and points</span>
                 </button>
                 
-                <button class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-2xl bg-white hover:bg-orange-50 hover:border-orange-200 transition group dark:bg-card dark:border-gray-800 dark:hover:bg-orange-900/20 dark:hover:border-orange-800">
-                    <div class="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform dark:bg-orange-900/40 dark:text-orange-400">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                    </div>
-                    <span class="mt-3 font-semibold text-gray-900 dark:text-white">Re-Grade</span>
-                    <span class="text-xs text-center text-gray-500 mt-1 dark:text-gray-400">Run the grading pipeline again</span>
-                </button>
+                <div class="space-y-3">
+                    <button 
+                        (click)="regrade()"
+                        [disabled]="isProcessing"
+                        class="w-full flex flex-row items-center justify-center gap-3 p-4 border border-gray-200 rounded-xl bg-white hover:bg-orange-50 hover:border-orange-200 transition group disabled:opacity-50 dark:bg-card dark:border-gray-800 dark:hover:bg-orange-900/20 dark:hover:border-orange-800"
+                    >
+                        <div class="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:rotate-180 transition-transform duration-500 dark:bg-orange-900/40 dark:text-orange-400">
+                            <svg *ngIf="!isProcessing" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <svg *ngIf="isProcessing" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">Re-Grade</span>
+                            <span class="text-[10px] text-gray-500 dark:text-gray-400">Run pipeline again</span>
+                        </div>
+                    </button>
+
+                    <button 
+                        (click)="requeue()"
+                        [disabled]="isProcessing"
+                        class="w-full flex flex-row items-center justify-center gap-3 p-4 border border-gray-200 rounded-xl bg-white hover:bg-blue-50 hover:border-blue-200 transition group disabled:opacity-50 dark:bg-card dark:border-gray-800 dark:hover:bg-blue-900/20 dark:hover:border-blue-800"
+                    >
+                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="flex flex-col items-start">
+                            <span class="font-bold text-gray-900 dark:text-white text-sm">Re-Queue</span>
+                            <span class="text-[10px] text-gray-500 dark:text-gray-400">Set back to Pending</span>
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
 

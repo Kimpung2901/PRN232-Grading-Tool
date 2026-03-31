@@ -13,6 +13,7 @@ import { TestCaseDto } from '../../../../api/models';
 export class TestCasesComponent implements OnInit {
     examId = '';
     testCases: TestCaseDto[] = [];
+    isProcessing = false;
 
     constructor(
         private route: ActivatedRoute,
@@ -35,7 +36,48 @@ export class TestCasesComponent implements OnInit {
         });
     }
 
-    addNewTestCase(): void {
-        console.log('Add new test case');
+    addNewTestCase(file: File): void {
+        const examIdNum = parseInt(this.examId, 10);
+        if (isNaN(examIdNum)) return;
+
+        this.isProcessing = true;
+        this.testCasesService.createTestCase({
+            examId: examIdNum,
+            body: { File: file }
+        }).subscribe({
+            next: () => {
+                this.isProcessing = false;
+                this.loadTestCases();
+            },
+            error: (err) => {
+                this.isProcessing = false;
+                console.error('Failed to add test case', err);
+            }
+        });
+    }
+
+    deleteTestCase(id: number | undefined): void {
+        if (!id) return;
+        const examIdNum = parseInt(this.examId, 10);
+        if (isNaN(examIdNum)) return;
+
+        if (!confirm('Are you sure you want to delete this test case collection?')) {
+            return;
+        }
+
+        this.isProcessing = true;
+        this.testCasesService.deleteTestCase({
+            examId: examIdNum,
+            id: id
+        }).subscribe({
+            next: () => {
+                this.isProcessing = false;
+                this.loadTestCases();
+            },
+            error: (err) => {
+                this.isProcessing = false;
+                console.error('Failed to delete test case', err);
+            }
+        });
     }
 }

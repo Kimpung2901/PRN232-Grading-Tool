@@ -14,6 +14,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ExamsService } from '../../../../services/exams.service';
+import { TestResultsService } from '../../../../services/test-results.service';
 import { ExamDto } from '../../../../api/models';
 
 @Component({
@@ -58,6 +59,7 @@ export class DashboardComponent implements OnInit {
     filterOpen = false;
     searchQuery = '';
     selectedSemester = 'Spring 2026';
+    isProcessing = false;
 
     semesters = [
         'Spring 2026',
@@ -106,7 +108,8 @@ export class DashboardComponent implements OnInit {
 
     constructor(
         private router: Router,
-        private examsService: ExamsService
+        private examsService: ExamsService,
+        private testResultsService: TestResultsService
     ) {}
 
     ngOnInit(): void {
@@ -117,8 +120,32 @@ export class DashboardComponent implements OnInit {
         this.examsService.getExams({ search: this.searchQuery || undefined, page: 1, pageSize: 100 }).subscribe({
             next: (res) => {
                 this.exams = res.items || [];
+                this.updateStats(res.total || 0);
             },
             error: (err) => console.error('Failed to load exams', err)
+        });
+    }
+
+    updateStats(totalCount: number): void {
+        this.stats[0].value = totalCount.toString();
+        // Other stats might remain mock or be calculated if data is available
+    }
+
+    runAllGrading(): void {
+        if (!confirm('Are you sure you want to run the grading pipeline for all exams?')) {
+            return;
+        }
+
+        this.isProcessing = true;
+        this.testResultsService.runGrading().subscribe({
+            next: () => {
+                this.isProcessing = false;
+                alert('Grading pipeline started for all exams.');
+            },
+            error: (err) => {
+                this.isProcessing = false;
+                console.error('Failed to start global grading', err);
+            }
         });
     }
 
@@ -127,12 +154,13 @@ export class DashboardComponent implements OnInit {
     }
 
     applyFilter(): void {
-        console.log('Filter applied. Semester:', this.selectedSemester);
-        // Integrate API
+        this.loadExams();
     }
 
     resetFilter(): void {
         this.selectedSemester = 'Spring 2026';
+        this.searchQuery = '';
+        this.loadExams();
     }
 
     createNewExam(): void {

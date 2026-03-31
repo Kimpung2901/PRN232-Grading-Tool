@@ -1,5 +1,5 @@
 interface ImportMetaEnv {
-  readonly VITE_API_URL: string;
+  readonly NG_APP_API_URL: string;
   [key: string]: any;
 }
 

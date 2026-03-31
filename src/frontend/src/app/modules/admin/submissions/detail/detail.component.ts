@@ -17,6 +17,7 @@ export class DetailComponent {
     activeTab = 'overview'; 
     submission: SubmissionDto | null = null;
     exam: ExamDto | null = null;
+    isProcessing = false;
     
     constructor(
         private route: ActivatedRoute,
@@ -32,9 +33,11 @@ export class DetailComponent {
     }
 
     loadData(): void {
+        this.isProcessing = true;
         this.submissionsService.getSubmissionById({ id: this.submissionId }).subscribe({
             next: (submission) => {
                 this.submission = submission;
+                this.isProcessing = false;
                 if (submission.examId) {
                     this.examsService.getExamById({ examId: submission.examId }).subscribe({
                         next: (exam) => this.exam = exam,
@@ -42,7 +45,38 @@ export class DetailComponent {
                     });
                 }
             },
-            error: (err) => console.error('Failed to load submission', err)
+            error: (err) => {
+                this.isProcessing = false;
+                console.error('Failed to load submission', err);
+            }
+        });
+    }
+
+    regrade(): void {
+        if (!this.submissionId) return;
+        this.isProcessing = true;
+        this.submissionsService.regradeRequest({ id: this.submissionId }).subscribe({
+            next: () => {
+                this.loadData();
+            },
+            error: (err) => {
+                this.isProcessing = false;
+                console.error('Regrade failed', err);
+            }
+        });
+    }
+
+    requeue(): void {
+        if (!this.submissionId) return;
+        this.isProcessing = true;
+        this.submissionsService.requeueSubmission({ id: this.submissionId }).subscribe({
+            next: () => {
+                this.loadData();
+            },
+            error: (err) => {
+                this.isProcessing = false;
+                console.error('Requeue failed', err);
+            }
         });
     }
 

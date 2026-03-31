@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../../node_modules/@angular/cdk/fesm2022/backwards-compatibility-DHR38MsD.mjs"],
+  "sourcesContent": ["import { VERSION } from '@angular/core';\n\n// TODO(crisbeto): remove this function when making breaking changes for v20.\n/**\n * Binds an event listener with specific options in a backwards-compatible way.\n * This function is necessary, because `Renderer2.listen` only supports listener options\n * after 19.1 and during the v19 period we support any 19.x version.\n * @docs-private\n */\nfunction _bindEventWithOptions(renderer, target, eventName, callback, options) {\n  const major = parseInt(VERSION.major);\n  const minor = parseInt(VERSION.minor);\n  // Event options in `listen` are only supported in 19.1 and beyond.\n  // We also allow 0.0.x, because that indicates a build at HEAD.\n  if (major > 19 || major === 19 && minor > 0 || major === 0 && minor === 0) {\n    return renderer.listen(target, eventName, callback, options);\n  }\n  target.addEventListener(eventName, callback, options);\n  return () => {\n    target.removeEventListener(eventName, callback, options);\n  };\n}\nexport { _bindEventWithOptions as _ };\n"],
+  "mappings": ";;;;;AASA,SAAS,sBAAsB,UAAU,QAAQ,WAAW,UAAU,SAAS;AAC7E,QAAM,QAAQ,SAAS,QAAQ,KAAK;AACpC,QAAM,QAAQ,SAAS,QAAQ,KAAK;AAGpC,MAAI,QAAQ,MAAM,UAAU,MAAM,QAAQ,KAAK,UAAU,KAAK,UAAU,GAAG;AACzE,WAAO,SAAS,OAAO,QAAQ,WAAW,UAAU,OAAO;AAAA,EAC7D;AACA,SAAO,iBAAiB,WAAW,UAAU,OAAO;AACpD,SAAO,MAAM;AACX,WAAO,oBAAoB,WAAW,UAAU,OAAO;AAAA,EACzD;AACF;",
+  "names": []
+}

@@ -8,6 +8,24 @@ services:
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
       MSSQL_MEMORY_LIMIT_MB: "2048"
     ports:
-      - "1433:1433"
+      - "14333:1433"
     volumes:
-      - ./data/sqlserver:/var/opt/mssql
+      - sqlserver_data:/var/opt/mssql
+      - ./data:/var/opt/backup
+
+  backend:
+    build:
+      context: ./src/backend/Api_RestAPI_gradingTool
+      dockerfile: Dockerfile
+    container_name: prn232_backend
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Server=sqlserver,1433;Database=PRN232_GradingTool;User Id=sa;Password=${MSSQL_SA_PASSWORD};Encrypt=False;TrustServerCertificate=True;
+      - Runner__ExecutablePath=../Runner/Runner.csproj
+    depends_on:
+      - sqlserver
+
+volumes:
+  sqlserver_data:

@@ -73,6 +73,31 @@ public sealed class SubmissionsController : ApiControllerBase
         });
     }
 
+    [HttpGet("exams/{examId:int}/grading-results")]
+    [HttpGet("exams/{examId:int}/submission-reports")]
+    public async Task<ActionResult<IReadOnlyList<SubmissionReportDto>>> GetReportsByExam(
+        int examId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _service.GetReportsByExamAsync(examId, cancellationToken);
+        if (!result.Success)
+        {
+            return MapError(result);
+        }
+
+        return Ok(result.Data!.Select(x => new SubmissionReportDto
+        {
+            SubmissionId = x.SubmissionId,
+            ExamId = x.ExamId,
+            StudentName = x.StudentName,
+            StudentCode = x.StudentCode,
+            TotalScore = x.TotalScore,
+            LastError = x.LastError,
+            Status = x.Status,
+            ReportPath = x.ReportPath
+        }).ToArray());
+    }
+
     [HttpPost("exams/{examId:int}/submissions")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<SubmissionDto>> Upload(
@@ -143,6 +168,44 @@ public sealed class SubmissionsController : ApiControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpPost("submissions/{id:int}/regrade-requests")]
+    [HttpPost("submissions/{id:int}/requeue")]
+    public async Task<ActionResult<SubmissionDto>> Requeue(int id, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.RequeueAsync(id, cancellationToken);
+        if (!result.Success)
+        {
+            return MapError(result);
+        }
+
+        return Ok(new SubmissionDto
+        {
+            Id = result.Data!.Id,
+            ExamId = result.Data!.ExamId,
+            StudentName = result.Data!.StudentName,
+            StudentCode = result.Data!.StudentCode,
+            FilePath = result.Data!.FilePath,
+            Status = result.Data!.Status
+        });
+    }
+
+    [HttpPost("exams/{examId:int}/regrade-requests")]
+    [HttpPost("exams/{examId:int}/submissions/requeue")]
+    public async Task<ActionResult<object>> RequeueByExam(int examId, CancellationToken cancellationToken = default)
+    {
+        var result = await _service.RequeueByExamAsync(examId, cancellationToken);
+        if (!result.Success)
+        {
+            return MapError(result);
+        }
+
+        return Ok(new
+        {
+            examId,
+            requeuedCount = result.Data
+        });
     }
 
     private ActionResult MapError<T>(ServiceResult<T> result)

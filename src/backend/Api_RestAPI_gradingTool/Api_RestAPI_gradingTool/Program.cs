@@ -20,8 +20,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("Default")
-    ?? Environment.GetEnvironmentVariable("GRADING_DB_CONNECTION");
+var connectionString = Environment.GetEnvironmentVariable("GRADING_DB_CONNECTION")
+    ?? builder.Configuration.GetConnectionString("Default");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException("Missing GRADING_DB_CONNECTION or ConnectionStrings:GradingDb.");
@@ -50,6 +50,27 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<Infrastructure.Persistence.GradingDbContext>();
+    var conn = db.Database.GetConnectionString();
+    Console.WriteLine($"?? Connection string: {conn}");
+
+    var pending = db.Database.GetPendingMigrations().ToList();
+    Console.WriteLine($"?? Pending migrations: {pending.Count}");
+
+    if (pending.Any())
+    {
+        Console.WriteLine("?? Running database migrations...");
+        db.Database.Migrate();
+        Console.WriteLine("? Migration completed.");
+    }
+    else
+    {
+        Console.WriteLine("? No pending migrations.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -10,6 +10,7 @@ namespace Application.Services;
 public sealed class SubmissionService : ISubmissionService
 {
     private const int MaxPageSize = 100;
+    private const int PendingStatus = 0;
     private readonly IGradingDbContext _db;
     private readonly IRunnerStorage _runnerStorage;
 
@@ -63,6 +64,39 @@ public sealed class SubmissionService : ISubmissionService
         return _db.Submissions.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
 
+    public async Task<ServiceResult<IReadOnlyList<SubmissionGradeReport>>> GetReportsByExamAsync(int examId, CancellationToken cancellationToken)
+    {
+        if (!await _db.Exams.AnyAsync(e => e.ExamId == examId, cancellationToken))
+        {
+            return ServiceResult<IReadOnlyList<SubmissionGradeReport>>.Fail(ServiceErrorType.NotFound, "Exam not found.");
+        }
+
+        var reports = await _db.Submissions
+            .AsNoTracking()
+            .Where(s => s.ExamId == examId)
+            .OrderByDescending(s => s.Id)
+            .Select(s => new SubmissionGradeReport
+            {
+                SubmissionId = s.Id,
+                ExamId = s.ExamId,
+                StudentName = s.StudentName,
+                StudentCode = s.StudentCode,
+                TotalScore = _db.TestResults
+                    .Where(tr => tr.SubmissionId == s.Id)
+                    .Select(tr => (decimal?)tr.Score)
+                    .FirstOrDefault() ?? 0m,
+                LastError = s.Status == PendingStatus ? "Pending grading." : null,
+                Status = s.Status == PendingStatus ? "pending" : "graded",
+                ReportPath = _db.TestResults
+                    .Where(tr => tr.SubmissionId == s.Id)
+                    .Select(tr => tr.ReportPath)
+                    .FirstOrDefault()
+            })
+            .ToArrayAsync(cancellationToken);
+
+        return ServiceResult<IReadOnlyList<SubmissionGradeReport>>.Ok(reports);
+    }
+
     public async Task<ServiceResult<Submission>> CreateAsync(int examId, string? studentName, string? studentCode, CancellationToken cancellationToken)
     {
         var validation = await ValidateRequest(examId, studentName, studentCode, null, cancellationToken);
@@ -77,7 +111,7 @@ public sealed class SubmissionService : ISubmissionService
             StudentName = studentName!.Trim(),
             StudentCode = studentCode!.Trim(),
             FilePath = string.Empty,
-            Status = 0
+            Status = PendingStatus
         };
 
         _db.Submissions.Add(entity);
@@ -112,7 +146,7 @@ public sealed class SubmissionService : ISubmissionService
             StudentName = studentName!.Trim(),
             StudentCode = studentCode!.Trim(),
             FilePath = string.Empty,
-            Status = 0
+            Status = PendingStatus
         };
 
         _db.Submissions.Add(entity);
@@ -144,6 +178,7 @@ public sealed class SubmissionService : ISubmissionService
 
         entity.StudentName = newName.Trim();
         entity.StudentCode = newCode.Trim();
+        entity.Status = PendingStatus;
 
         if (fileStream is not null && originalFileName is not null)
         {
@@ -166,6 +201,62 @@ public sealed class SubmissionService : ISubmissionService
         await _db.SaveChangesAsync(cancellationToken);
 
         return ServiceResult<Submission>.Ok(entity);
+    }
+
+    public async Task<ServiceResult<Submission>> RequeueAsync(int id, CancellationToken cancellationToken)
+    {
+        var submission = await _db.Submissions
+            .Include(s => s.TestResults)
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        if (submission is null)
+        {
+            return ServiceResult<Submission>.Fail(ServiceErrorType.NotFound, "Submission not found.");
+        }
+
+        if (submission.TestResults.Count > 0)
+        {
+            _db.TestResults.RemoveRange(submission.TestResults);
+        }
+
+        submission.Status = PendingStatus;
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return ServiceResult<Submission>.Ok(submission);
+    }
+
+    public async Task<ServiceResult<int>> RequeueByExamAsync(int examId, CancellationToken cancellationToken)
+    {
+        if (!await _db.Exams.AnyAsync(e => e.ExamId == examId, cancellationToken))
+        {
+            return ServiceResult<int>.Fail(ServiceErrorType.NotFound, "Exam not found.");
+        }
+
+        var submissions = await _db.Submissions
+            .Include(s => s.TestResults)
+            .Where(s => s.ExamId == examId)
+            .ToListAsync(cancellationToken);
+
+        if (submissions.Count == 0)
+        {
+            return ServiceResult<int>.Ok(0);
+        }
+
+        var testResults = submissions
+            .SelectMany(s => s.TestResults)
+            .ToList();
+
+        if (testResults.Count > 0)
+        {
+            _db.TestResults.RemoveRange(testResults);
+        }
+
+        foreach (var submission in submissions)
+        {
+            submission.Status = PendingStatus;
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+        return ServiceResult<int>.Ok(submissions.Count);
     }
 
     public async Task<ServiceResult<bool>> DeleteAsync(int id, CancellationToken cancellationToken)

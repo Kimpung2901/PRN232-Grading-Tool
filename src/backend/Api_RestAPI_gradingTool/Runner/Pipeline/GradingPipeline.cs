@@ -20,7 +20,7 @@ public sealed class GradingPipeline
     private readonly EnvironmentSetupService _environmentSetupService = new();
     private readonly DatabaseSetupService _databaseSetupService = new();
 
-    public async Task RunPipeline(CancellationToken cancellationToken = default)
+    public async Task RunPipeline(string? manifestPath = null, CancellationToken cancellationToken = default)
     {
         var runnerRoot = RunnerPathResolver.ResolveRunnerRoot();
         var workspaceRoot = Path.Combine(runnerRoot, "workspace");
@@ -38,33 +38,44 @@ public sealed class GradingPipeline
 
         try
         {
+            var manifest = await LoadManifestAsync(manifestPath, cancellationToken);
             var probeLogPath = Path.Combine(reportsRoot, "newman.setup.log");
             var newmanCommand = await _environmentSetupService.EnsureNewmanInstalledAsync(runnerRoot, probeLogPath, cancellationToken);
 
             var databaseRoot = Path.Combine(runnerRoot, "database");
-            var seedScript = DatabaseSetupService.FindSeedScript(databaseRoot);
+            var seedScript = manifest?.SeedScriptPath ?? DatabaseSetupService.FindSeedScript(databaseRoot);
             var runnerConnStr = DatabaseSetupService.ReadRunnerConnectionString(databaseRoot);
             if (seedScript is not null && runnerConnStr is not null)
             {
                 var dbLogPath = Path.Combine(reportsRoot, "db.log");
                 await _databaseSetupService.SeedAsync(runnerConnStr, seedScript, dbLogPath, cancellationToken);
             }
-            var collectionPath = ResolveSingleFile(collectionsRoot, "*.postman_collection.json", "Postman collection");
-            var submissionZipPaths = Directory.GetFiles(submissionsRoot, "*.zip", SearchOption.TopDirectoryOnly)
-                .OrderBy(Path.GetFileName)
-                .ToList();
+            var collectionPath = manifest?.CollectionPath ?? ResolveSingleFile(collectionsRoot, "*.postman_collection.json", "Postman collection");
+            var submissions = manifest?.Submissions
+                .Where(x => File.Exists(x.SubmissionFilePath))
+                .OrderBy(x => x.SubmissionName)
+                .ToList()
+                ?? Directory.GetFiles(submissionsRoot, "*.zip", SearchOption.TopDirectoryOnly)
+                    .OrderBy(Path.GetFileName)
+                    .Select(path => new GradingManifestSubmission
+                    {
+                        SubmissionId = 0,
+                        SubmissionName = Path.GetFileNameWithoutExtension(path),
+                        SubmissionFilePath = path
+                    })
+                    .ToList();
 
-            if (submissionZipPaths.Count == 0)
+            if (submissions.Count == 0)
             {
                 throw new PipelineException("TEST_RUN_FAILED", $"Could not find submission zip in {submissionsRoot}.");
             }
 
-            var gradingTasks = submissionZipPaths
-                .Select((zipPath, index) => GradeSingleSubmissionAsync(
+            var gradingTasks = submissions
+                .Select((submission, index) => GradeSingleSubmissionAsync(
                     runnerRoot,
                     workspaceRoot,
                     reportsRoot,
-                    zipPath,
+                    submission,
                     collectionPath,
                     newmanCommand,
                     DefaultApiPort + index,
@@ -116,6 +127,17 @@ public sealed class GradingPipeline
         }
 
         return files[0];
+    }
+
+    private static async Task<GradingManifest?> LoadManifestAsync(string? manifestPath, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(manifestPath) || !File.Exists(manifestPath))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(manifestPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        return await JsonSerializer.DeserializeAsync<GradingManifest>(stream, cancellationToken: cancellationToken);
     }
 
 
@@ -336,12 +358,13 @@ public sealed class GradingPipeline
         string runnerRoot,
         string workspaceRoot,
         string reportsRoot,
-        string submissionZipPath,
+        GradingManifestSubmission submission,
         string collectionPath,
         string newmanCommand,
         int apiPort,
         CancellationToken cancellationToken)
     {
+        var submissionZipPath = submission.SubmissionFilePath;
         var submissionName = Path.GetFileNameWithoutExtension(submissionZipPath);
         var reportDirectory = Path.Combine(reportsRoot, SanitizeFileName(submissionName));
         Directory.CreateDirectory(reportDirectory);
@@ -456,7 +479,7 @@ public sealed class GradingPipeline
         output.ElapsedSeconds = stopwatch.Elapsed.TotalSeconds;
 
         await WriteResultFileAsync(output, resultJsonPath, cancellationToken);
-        await PostTestResultAsync(output, resultJsonPath, cancellationToken);
+        await PostTestResultAsync(output, resultJsonPath, submission.SubmissionId, cancellationToken);
         return output;
     }
 
@@ -465,10 +488,11 @@ public sealed class GradingPipeline
     private static readonly HttpClient _httpClient = new();
 
     private static async Task PostTestResultAsync(
-        PipelineConsoleOutput output, string resultFilePath, CancellationToken cancellationToken)
+        PipelineConsoleOutput output, string resultFilePath, int submissionId, CancellationToken cancellationToken)
     {
         var payload = new TestResultPayload
         {
+            SubmissionId = submissionId,
             StudentName = output.SubmissionName,
             Score = (int)Math.Round(output.Summary.ScorePercent),
             Status = output.BuildSucceeded ? "build ok" : "build false",

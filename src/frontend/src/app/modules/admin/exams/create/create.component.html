@@ -85,61 +85,20 @@
                     
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <!-- Exam Name -->
-                        <div class="sm:col-span-2">
-                            <label
-                                class="text-secondary mb-1.5 block text-xs font-medium"
-                            >
+                        <div class="col-span-2">
+                            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Exam Name <span class="text-red-500">*</span>
                             </label>
-                            <div class="relative">
-                                <input
-                                    type="text"
-                                    formControlName="name"
-                                    placeholder="Enter exam name (e.g. Midterm Spring 2026)"
-                                    class="h-12 w-full rounded-xl border bg-gray-50 py-0 px-4 text-sm leading-[48px] focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                                    [ngClass]="
-                                        form.get('name')?.invalid &&
-                                        form.get('name')?.touched
-                                            ? 'border-red-300 dark:border-red-500'
-                                            : 'border-gray-200'
-                                    "
-                                />
+                            <input 
+                                type="text" 
+                                formControlName="name"
+                                class="block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-2.5 text-sm transition focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                placeholder="e.g. Midterm Spring 2026"
+                            >
+                            <div *ngIf="form.get('name')?.touched && form.get('name')?.invalid" class="mt-1 text-xs text-red-500">
+                                <span *ngIf="form.get('name')?.errors?.['required']">Exam name is required.</span>
+                                <span *ngIf="form.get('name')?.errors?.['minlength']">Minimum 3 characters.</span>
                             </div>
-                            <p
-                                *ngIf="
-                                    form.get('name')?.invalid &&
-                                    form.get('name')?.touched
-                                "
-                                class="mt-1 text-xs text-red-500"
-                            >
-                                Valid exam name is required (min 3 chars).
-                            </p>
-                        </div>
-
-                        <!-- Semester -->
-                        <div class="sm:col-span-2 relative">
-                            <label
-                                class="text-secondary mb-1.5 block text-xs font-medium"
-                            >
-                                Semester
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-                                <mat-select formControlName="semester" placeholder="Select semester">
-                                    <mat-option *ngFor="let s of semesters" [value]="s">
-                                        {{ s }}
-                                    </mat-option>
-                                </mat-select>
-                            </mat-form-field>
-                            <p
-                                *ngIf="
-                                    form.get('semester')?.invalid &&
-                                    form.get('semester')?.touched
-                                "
-                                class="mt-1 text-xs text-red-500"
-                            >
-                                Please specify a semester.
-                            </p>
                         </div>
                         
                         <!-- Description -->

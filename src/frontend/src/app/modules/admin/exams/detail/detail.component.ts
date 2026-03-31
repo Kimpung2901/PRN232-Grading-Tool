@@ -1,19 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-
-interface ExamDetail {
-    id: string;
-    name: string;
-    semester: string;
-    status: 'Active' | 'Draft' | 'Completed';
-    description: string;
-    collectionFilePath: string;
-    databaseFilePath: string;
-    testCaseCount: number;
-    submissionCount: number;
-    createdAt: string;
-}
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { ExamsService } from '../../../../services/exams.service';
+import { ExamDto } from '../../../../api/models';
 
 @Component({
     selector: 'app-exams-detail',
@@ -21,27 +10,30 @@ interface ExamDetail {
     imports: [CommonModule, RouterModule],
     templateUrl: './detail.component.html',
 })
-export class DetailComponent {
+export class DetailComponent implements OnInit {
     id = '';
-    detail: ExamDetail | null = null;
+    detail: ExamDto | null = null;
     activeTab = 'overview'; // overview, test-cases, data
 
-    constructor(private route: ActivatedRoute) {
-        const idParam = this.route.snapshot.paramMap.get('id') ?? 'EXM-101';
-        this.id = idParam;
+    constructor(
+        private route: ActivatedRoute, 
+        private examsService: ExamsService,
+        private router: Router
+    ) {
+        this.id = this.route.snapshot.paramMap.get('id') ?? '';
+    }
+
+    ngOnInit(): void {
+        this.loadDetail();
+    }
+
+    loadDetail(): void {
+        const examIdNum = parseInt(this.id, 10);
+        if (isNaN(examIdNum)) return;
         
-        // Mock data
-        this.detail = {
-            id: this.id,
-            name: 'Midterm PRN232',
-            semester: 'Spring 2026',
-            status: 'Active',
-            description: 'Midterm examination for PRN232 course. Covers all chapters up to 5.',
-            collectionFilePath: '/uploads/collections/midterm_spring_2026.json',
-            databaseFilePath: '/uploads/database/db_midterm.sql',
-            testCaseCount: 15,
-            submissionCount: 120,
-            createdAt: '2026-03-01T08:00:00Z'
-        };
+        this.examsService.getExamById({ examId: examIdNum }).subscribe({
+            next: (res) => this.detail = res,
+            error: (err) => console.error('Error fetching details', err)
+        });
     }
 }

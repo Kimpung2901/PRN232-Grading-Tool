@@ -39,56 +39,27 @@
                 <table class="w-full text-left text-sm whitespace-nowrap">
                     <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
                         <tr>
-                            <th class="px-6 py-4 font-medium w-1/3">Test Case Name</th>
-                            <th class="px-6 py-4 font-medium">Postman Request ID</th>
+                            <th class="px-6 py-4 font-medium w-3/4">Expected Result / Input Data</th>
                             <th class="px-6 py-4 font-medium text-center">Points</th>
-                            <th class="px-6 py-4 font-medium">Dependency</th>
                             <th class="px-6 py-4 font-medium text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        <!-- We use ng-container to loop through flat list and render appropriately based on group vs item -->
+                        <!-- We loop through flat list and render appropriately -->
                         <ng-container *ngFor="let tc of testCases">
-                            
-                            <!-- If Group Row -->
-                            <tr *ngIf="tc.isGroup" class="bg-gray-50/50 dark:bg-gray-800/20 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/40" (click)="toggleGroup(tc)">
-                                <td colspan="5" class="px-6 py-3">
-                                    <div class="flex items-center gap-2 font-semibold text-gray-800 dark:text-gray-200">
-                                        <svg class="h-4 w-4 transition-transform duration-200" [class.rotate-90]="tc.expanded" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                        <svg class="h-5 w-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                                        </svg>
-                                        {{ tc.name }}
+                            <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 group">
+                                <td class="px-6 py-3 pl-6">
+                                    <div class="font-medium text-gray-900 dark:text-white mb-1">
+                                        Input: <span class="font-mono text-xs text-gray-600 dark:text-gray-300">{{ tc.inputData || 'None' }}</span>
                                     </div>
-                                </td>
-                            </tr>
-
-                            <!-- If Leaf Node Row -->
-                            <tr *ngIf="!tc.isGroup" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 group">
-                                <td class="px-6 py-3 pl-12 flex items-center gap-3">
-                                    <div class="h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                                    <div class="font-medium text-gray-900 dark:text-white">{{ tc.name }}</div>
-                                </td>
-                                <td class="px-6 py-3">
-                                    <span class="rounded bg-gray-100 px-2.5 py-1 text-xs font-mono text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                                        {{ tc.postmanItemId || 'none' }}
-                                    </span>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                                        Expected: <span class="font-mono text-xs">{{ tc.expectedResult || 'None' }}</span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-3 text-center">
                                     <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                        {{ tc.point }}
+                                        {{ tc.points || 0 }}
                                     </span>
-                                </td>
-                                <td class="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">
-                                    <div class="flex items-center gap-1" *ngIf="tc.dependencyTestCaseId">
-                                        <svg class="h-4 w-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                        </svg>
-                                        {{ getDependencyName(tc.dependencyTestCaseId) }}
-                                    </div>
-                                    <span *ngIf="!tc.dependencyTestCaseId" class="text-gray-400">-</span>
                                 </td>
                                 <td class="px-6 py-3 text-right">
                                     <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -107,7 +78,7 @@
                             </tr>
                         </ng-container>
                         <tr *ngIf="testCases.length === 0">
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="3" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                 <p class="mt-1 text-sm">No test cases configured yet.</p>
                             </td>
                         </tr>
@@ -116,8 +87,7 @@
             </div>
             <!-- Pagination Footer -->
             <div class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-800/50 flex justify-between items-center text-sm text-gray-500">
-                <span>Total test cases: {{ testCases.length - 2 }}</span>
-                <span class="font-medium text-gray-900 dark:text-white">Total Points: 5.5</span>
+                <span>Total test cases: {{ testCases.length }}</span>
             </div>
         </div>
     </div>

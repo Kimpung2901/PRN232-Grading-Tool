@@ -10,6 +10,7 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { ExamsService } from '../../../../services/exams.service';
 
 @Component({
     selector: 'app-exams-create',
@@ -21,16 +22,14 @@ export class CreateComponent {
     form: FormGroup;
     isDragging = false;
     uploadedFile: File | null = null;
-    semesters = ['Spring 2026', 'Fall 2025', 'Summer 2025', 'Spring 2025'];
 
     constructor(
         private fb: FormBuilder,
-        private router: Router
+        private router: Router,
+        private examsService: ExamsService
     ) {
         this.form = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
-            semester: ['', Validators.required],
-            description: ['']
+            name: ['', [Validators.required, Validators.minLength(3)]]
         });
     }
 
@@ -61,8 +60,11 @@ export class CreateComponent {
     }
 
     setFile(file: File): void {
-        // Here we could add validation to check if it's a .json file
-        this.uploadedFile = file;
+        if (file.name.endsWith('.sql')) {
+            this.uploadedFile = file;
+        } else {
+            alert('Please select a valid SQL script file (.sql)');
+        }
     }
 
     removeFile(): void {
@@ -80,14 +82,19 @@ export class CreateComponent {
     onSubmit(): void {
         if (this.form.valid) {
             if (!this.uploadedFile) {
-                alert('Please upload a Postman Collection File.');
+                alert('Please upload an SQL Initialization Script.');
                 return;
             }
-            console.log('Submit Exam:', this.form.value);
-            console.log('Collection File:', this.uploadedFile.name);
-            // Integrate API call here to save the exam
             
-            this.router.navigate(['/exams/dashboard']);
+            this.examsService.createExam({ 
+                body: { 
+                    ExamName: this.form.value.name, 
+                    SqlFile: this.uploadedFile 
+                } 
+            }).subscribe({
+                next: () => this.router.navigate(['/exams/dashboard']),
+                error: (err) => console.error('Error creating exam', err)
+            });
         } else {
             this.form.markAllAsTouched();
         }

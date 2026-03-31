@@ -6,13 +6,15 @@ import {
     trigger,
 } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { ExamsService } from '../../../../services/exams.service';
+import { ExamDto } from '../../../../api/models';
 
 @Component({
     selector: 'app-exams-dashboard',
@@ -51,7 +53,7 @@ import { MatInputModule } from '@angular/material/input';
         ]),
     ],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
     // Filter state
     filterOpen = false;
     searchQuery = '';
@@ -100,46 +102,25 @@ export class DashboardComponent {
         }
     ];
 
-    exams = [
-        {
-            id: 'EXM-101',
-            name: 'Midterm PRN232',
-            semester: 'Spring 2026',
-            testCases: 15,
-            submissions: 120,
-            status: 'Active',
-            statusColor: 'bg-emerald-100 text-emerald-700'
-        },
-        {
-            id: 'EXM-102',
-            name: 'Final PRN232',
-            semester: 'Spring 2026',
-            testCases: 25,
-            submissions: 0,
-            status: 'Draft',
-            statusColor: 'bg-gray-100 text-gray-700'
-        },
-        {
-            id: 'EXM-103',
-            name: 'Assignment 1',
-            semester: 'Fall 2025',
-            testCases: 10,
-            submissions: 145,
-            status: 'Completed',
-            statusColor: 'bg-blue-100 text-blue-700'
-        },
-        {
-            id: 'EXM-104',
-            name: 'Assignment 2',
-            semester: 'Fall 2025',
-            testCases: 12,
-            submissions: 142,
-            status: 'Completed',
-            statusColor: 'bg-blue-100 text-blue-700'
-        }
-    ];
+    exams: ExamDto[] = [];
 
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router,
+        private examsService: ExamsService
+    ) {}
+
+    ngOnInit(): void {
+        this.loadExams();
+    }
+
+    loadExams(): void {
+        this.examsService.getExams({ search: this.searchQuery || undefined, page: 1, pageSize: 100 }).subscribe({
+            next: (res) => {
+                this.exams = res.items || [];
+            },
+            error: (err) => console.error('Failed to load exams', err)
+        });
+    }
 
     toggleFilter(): void {
         this.filterOpen = !this.filterOpen;

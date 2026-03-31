@@ -4,6 +4,9 @@ namespace Api_RestAPI_gradingTool.Contracts.Grading;
 
 public sealed class TestResultRequest
 {
+    [JsonPropertyName("submissionId")]
+    public int? SubmissionId { get; set; }
+
     [JsonPropertyName("studentName")]
     public string StudentName { get; set; } = string.Empty;
 

@@ -5,12 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace Api_RestAPI_gradingTool.Controllers.Grading;
 
 [Route("api")]
 public sealed class TestResultsController : ApiControllerBase
 {
+    private const int PendingStatus = 0;
+    private const int GradedStatus = 1;
     private static readonly object RunnerStateLock = new();
     private static bool _isRunnerRunning;
     private static int? _currentProcessId;
@@ -40,29 +43,38 @@ public sealed class TestResultsController : ApiControllerBase
     }
 
     [HttpGet("testrunner")]
-    public ActionResult StartRunner()
+    public async Task<ActionResult> StartRunner(CancellationToken cancellationToken = default)
     {
-        lock (RunnerStateLock)
+        try
         {
-            if (_isRunnerRunning)
-            {
-                return Conflict(new
-                {
-                    message = "Runner is already running.",
-                    isRunning = true,
-                    processId = _currentProcessId,
-                    startedAtUtc = _startedAtUtc
-                });
-            }
+            await StartRunnerCoreAsync(null, cancellationToken);
         }
-
-        var runnerExecutablePath = ResolveRunnerPath();
-        var processStartInfo = BuildStartInfo(runnerExecutablePath);
-        StartRunnerInBackground(processStartInfo);
+        catch (InvalidOperationException ex)
+        {
+            return ProblemConflict(ex.Message);
+        }
 
         return Ok(new
         {
             message = "Runner started."
+        });
+    }
+
+    [HttpGet("exams/{examId:int}/testrunner")]
+    public async Task<ActionResult> StartRunnerForExam(int examId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await StartRunnerCoreAsync(examId, cancellationToken);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return ProblemConflict(ex.Message);
+        }
+
+        return Ok(new
+        {
+            message = $"Runner started for exam {examId}."
         });
     }
 
@@ -88,15 +100,22 @@ public sealed class TestResultsController : ApiControllerBase
         [FromBody] TestResultRequest request,
         CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation(
+            "Received POST /api/testresults for SubmissionId={SubmissionId}, StudentName={StudentName}, Score={Score}, ReportFilePath={ReportFilePath}",
+            request.SubmissionId,
+            request.StudentName,
+            request.Score,
+            request.ReportFilePath);
+
         if (string.IsNullOrWhiteSpace(request.StudentName))
         {
             return ProblemBadRequest("studentName is required.");
         }
 
-        var submission = await ResolveSubmissionAsync(request.StudentName, cancellationToken);
+        var submission = await ResolveSubmissionAsync(request.SubmissionId, request.StudentName, cancellationToken);
         if (submission is null)
         {
-            return ProblemNotFound($"Submission not found for studentName '{request.StudentName}'.");
+            return ProblemNotFound($"Submission not found for submissionId '{request.SubmissionId}' or studentName '{request.StudentName}'.");
         }
 
         var testResult = await _db.TestResults.FirstOrDefaultAsync(
@@ -114,6 +133,7 @@ public sealed class TestResultsController : ApiControllerBase
 
         testResult.Score = request.Score;
         testResult.ReportPath = request.ReportFilePath;
+        submission.Status = GradedStatus;
 
         await _db.SaveChangesAsync(cancellationToken);
         await _hubContext.Clients.All.SendAsync("ReceiveTestResult", request, cancellationToken);
@@ -148,28 +168,32 @@ public sealed class TestResultsController : ApiControllerBase
         var extension = Path.GetExtension(runnerExecutablePath);
         if (extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase))
         {
-            return new ProcessStartInfo
+            var startInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"run --project \"{runnerExecutablePath}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
+            startInfo.ArgumentList.Add("run");
+            startInfo.ArgumentList.Add("--project");
+            startInfo.ArgumentList.Add(runnerExecutablePath);
+            return startInfo;
         }
 
         if (extension.Equals(".dll", StringComparison.OrdinalIgnoreCase))
         {
-            return new ProcessStartInfo
+            var startInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"\"{runnerExecutablePath}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
+            startInfo.ArgumentList.Add(runnerExecutablePath);
+            return startInfo;
         }
 
         return new ProcessStartInfo
@@ -182,15 +206,24 @@ public sealed class TestResultsController : ApiControllerBase
         };
     }
 
-    private async Task<Infrastructure.Submission?> ResolveSubmissionAsync(string studentName, CancellationToken cancellationToken)
+    private async Task<Infrastructure.Submission?> ResolveSubmissionAsync(int? submissionId, string studentName, CancellationToken cancellationToken)
     {
+        if (submissionId.HasValue)
+        {
+            var byId = await _db.Submissions.FirstOrDefaultAsync(s => s.Id == submissionId.Value, cancellationToken);
+            if (byId is not null)
+            {
+                return byId;
+            }
+        }
+
         var normalized = studentName.Trim();
 
-        var submissionIdText = normalized.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .FirstOrDefault();
-        if (int.TryParse(submissionIdText, out var submissionId))
+        var parts = normalized.Split('_', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var submissionIdText = parts.Length >= 3 ? parts[^3] : parts.FirstOrDefault();
+        if (int.TryParse(submissionIdText, out var parsedSubmissionId))
         {
-            var byId = await _db.Submissions.FirstOrDefaultAsync(s => s.Id == submissionId, cancellationToken);
+            var byId = await _db.Submissions.FirstOrDefaultAsync(s => s.Id == parsedSubmissionId, cancellationToken);
             if (byId is not null)
             {
                 return byId;
@@ -216,6 +249,98 @@ public sealed class TestResultsController : ApiControllerBase
         return await _db.Submissions
             .OrderByDescending(s => s.Id)
             .FirstOrDefaultAsync(s => EF.Functions.Like(s.FilePath, $"%{normalized}%"), cancellationToken);
+    }
+
+    private async Task StartRunnerCoreAsync(int? examId, CancellationToken cancellationToken)
+    {
+        lock (RunnerStateLock)
+        {
+            if (_isRunnerRunning)
+            {
+                throw new InvalidOperationException("Runner is already running.");
+            }
+        }
+
+        var runnerExecutablePath = ResolveRunnerPath();
+        var manifestPath = await WritePendingManifestAsync(runnerExecutablePath, examId, cancellationToken);
+        var processStartInfo = BuildStartInfo(runnerExecutablePath);
+        processStartInfo.ArgumentList.Add("--manifest");
+        processStartInfo.ArgumentList.Add(manifestPath);
+        StartRunnerInBackground(processStartInfo);
+    }
+
+    private async Task<string> WritePendingManifestAsync(string runnerExecutablePath, int? examId, CancellationToken cancellationToken)
+    {
+        var runnerRoot = Path.GetDirectoryName(runnerExecutablePath)
+            ?? throw new InvalidOperationException("Runner root could not be resolved.");
+        var reportsRoot = Path.Combine(runnerRoot, "reports");
+        Directory.CreateDirectory(reportsRoot);
+
+        var pendingQuery = _db.Submissions
+            .AsNoTracking()
+            .Where(s => s.Status == PendingStatus && !string.IsNullOrWhiteSpace(s.FilePath));
+
+        if (examId.HasValue)
+        {
+            pendingQuery = pendingQuery.Where(s => s.ExamId == examId.Value);
+        }
+
+        var pendingSubmissions = await pendingQuery
+            .OrderBy(s => s.ExamId)
+            .ThenBy(s => s.Id)
+            .ToListAsync(cancellationToken);
+
+        if (pendingSubmissions.Count == 0)
+        {
+            throw new InvalidOperationException(examId.HasValue
+                ? $"No pending submissions to grade for exam {examId.Value}."
+                : "No pending submissions to grade.");
+        }
+
+        var examIds = pendingSubmissions.Select(s => s.ExamId).Distinct().ToArray();
+        if (examIds.Length != 1)
+        {
+            throw new InvalidOperationException("Runner can only grade one exam per batch. Resolve pending submissions from other exams first.");
+        }
+
+        var targetExamId = examIds[0];
+        var collection = await _db.TestCases
+            .AsNoTracking()
+            .Where(t => t.ExamId == targetExamId)
+            .OrderByDescending(t => t.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (collection is null || string.IsNullOrWhiteSpace(collection.FilePath))
+        {
+            throw new InvalidOperationException($"Exam {targetExamId} does not have a Postman collection.");
+        }
+
+        var exam = await _db.Exams
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.ExamId == targetExamId, cancellationToken)
+            ?? throw new InvalidOperationException($"Exam {targetExamId} was not found.");
+
+        var manifest = new
+        {
+            CollectionPath = Path.GetFullPath(Path.Combine(runnerRoot, collection.FilePath.Replace('/', Path.DirectorySeparatorChar))),
+            SeedScriptPath = string.IsNullOrWhiteSpace(exam.SqlScriptPath)
+                ? null
+                : Path.GetFullPath(Path.Combine(runnerRoot, exam.SqlScriptPath.Replace('/', Path.DirectorySeparatorChar))),
+            Submissions = pendingSubmissions.Select(s => new
+            {
+                SubmissionId = s.Id,
+                SubmissionName = Path.GetFileNameWithoutExtension(s.FilePath),
+                SubmissionFilePath = Path.GetFullPath(Path.Combine(runnerRoot, s.FilePath.Replace('/', Path.DirectorySeparatorChar)))
+            }).ToArray()
+        };
+
+        var manifestPath = Path.Combine(reportsRoot, "pending-submissions.json");
+        await System.IO.File.WriteAllTextAsync(
+            manifestPath,
+            JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }),
+            cancellationToken);
+
+        return manifestPath;
     }
 
     private void StartRunnerInBackground(ProcessStartInfo startInfo)

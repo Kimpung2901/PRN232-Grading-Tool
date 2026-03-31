@@ -130,6 +130,28 @@ Response 400, 404, 409
 
 - `ProblemDetails`
 
+### GET `/api/exams/{examId}/submission-reports`
+
+Get grading scores for all submissions in an exam.
+
+Response 200
+
+```json
+[
+  {
+    "submissionId": 10,
+    "examId": 1,
+    "studentName": "Nguyen Van A",
+    "studentCode": "HE150001",
+    "totalScore": 80,
+    "lastError": null,
+    "status": "graded",
+    "reportPath": "reports/exam_1/result.json",
+    "results": []
+  }
+]
+```
+
 ## Grading runner
 
 ### GET `/api/testrunner`
@@ -154,6 +176,22 @@ Response 409
   "startedAtUtc": "2026-03-27T10:20:30.0000000+00:00"
 }
 ```
+
+### GET `/api/exams/{examId}/testrunner`
+
+Start runner for one specific exam only.
+
+Response 200
+
+```json
+{
+  "message": "Runner started for exam 1."
+}
+```
+
+Response 409
+
+- `ProblemDetails`
 
 ### GET `/api/testrunner/status`
 
@@ -427,6 +465,36 @@ Response 204
 Response 400, 404, 409
 
 - `ProblemDetails`
+
+### POST `/api/submissions/{id}/requeue`
+
+Requeue one submission for grading again. Existing stored score/report is cleared.
+
+Response 200
+
+```json
+{
+  "id": 10,
+  "examId": 1,
+  "studentName": "Nguyen Van A",
+  "studentCode": "HE150001",
+  "filePath": "submissions/exam_1_10_HE150001_20260331.zip",
+  "status": 0
+}
+```
+
+### POST `/api/exams/{examId}/submissions/requeue`
+
+Requeue all submissions of an exam for grading again. Existing stored scores/reports are cleared.
+
+Response 200
+
+```json
+{
+  "examId": 1,
+  "requeuedCount": 24
+}
+```
 
 ## Test cases
 

@@ -20,8 +20,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("Default")
-    ?? Environment.GetEnvironmentVariable("GRADING_DB_CONNECTION");
+var connectionString = Environment.GetEnvironmentVariable("GRADING_DB_CONNECTION")
+    ?? builder.Configuration.GetConnectionString("Default");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException("Missing GRADING_DB_CONNECTION or ConnectionStrings:GradingDb.");

@@ -35,7 +35,7 @@ docker compose up -d
 ### 4) Restore database (from shared backup)
 The database backup (`.bak`) is shared separately (not committed to git).
 Use SSMS:
-1. Connect to `localhost,1433`
+1. Connect to `localhost,14333`
 2. Restore Database… and select the `.bak` file
 
 ### 5) Run API

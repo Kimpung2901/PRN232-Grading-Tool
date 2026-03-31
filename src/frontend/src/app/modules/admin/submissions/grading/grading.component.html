@@ -1,0 +1,139 @@
+<div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent relative h-screen">
+    <!-- ─── BREADCRUMB HEADER ─────────────────────────────────────────── -->
+    <div class="flex items-center justify-between border-b bg-white px-8 py-4 text-sm dark:bg-card">
+        <span class="font-semibold text-gray-800 dark:text-white">Grading Results</span>
+        <div class="text-secondary flex items-center gap-1">
+            <span>Dashboard</span>
+            <span>•</span>
+            <a class="cursor-pointer hover:text-primary" [routerLink]="['/submissions', 'dashboard']">Submissions</a>
+            <span>•</span>
+            <a class="cursor-pointer hover:text-primary" [routerLink]="['/submissions', submissionId]">{{ submissionId }}</a>
+            <span>•</span>
+            <span class="font-semibold text-primary">Grading</span>
+        </div>
+    </div>
+
+    <div class="space-y-6 px-8 py-8 w-full max-w-7xl mx-auto flex-1 overflow-auto">
+        <!-- ─── HEADER ────────────────────────────────────────────────────────── -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Grading Report</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown of test cases execution and points awarded.</p>
+            </div>
+            
+            <div class="flex flex-col items-end">
+                <span class="text-sm text-gray-500 font-medium uppercase tracking-wider dark:text-gray-400">Total Score</span>
+                <div class="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-1">
+                    {{ totalScore | number:'1.1-2' }} <span class="text-lg text-gray-400 font-normal">/ {{ maxScore | number:'1.1-2' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── RESULTS GRID ─────────────────────────────────────────────────────── -->
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-card overflow-hidden mt-6">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                        <tr>
+                            <th class="px-6 py-4 font-medium w-1/2">Test Case</th>
+                            <th class="px-6 py-4 font-medium w-32">Status</th>
+                            <th class="px-6 py-4 font-medium text-center w-32">Points</th>
+                            <th class="px-6 py-4 font-medium text-right w-32">Log</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr *ngFor="let result of results" class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 group">
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-gray-900 dark:text-white">{{ result.testCaseName }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="getStatusClass(result.status)">
+                                    <!-- Passed icon -->
+                                    <svg *ngIf="result.status === 'Passed'" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <!-- Failed icon -->
+                                    <svg *ngIf="result.status === 'Failed'" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    <!-- Skipped icon -->
+                                    <svg *ngIf="result.status === 'Skipped'" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M18 12H6" />
+                                    </svg>
+                                    {{ result.status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="font-bold text-gray-900 dark:text-white">{{ result.point | number:'1.1-2' }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button 
+                                    (click)="viewLog(result.log)"
+                                    class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 hover:text-indigo-600 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-indigo-400 group-hover:border-indigo-200"
+                                >
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    View Log
+                                </button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="results.length === 0">
+                            <td colspan="4" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                <p class="text-sm">No test cases executed yet.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800/50 flex items-center justify-between text-sm">
+                <span class="text-gray-500 dark:text-gray-400">Test Cases Run: {{ results.length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── LOG SLIDE-OUT PANEL ────────────────────────────────────────────── -->
+    <!-- Backdrop overlay -->
+    <div 
+        class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+        [class.opacity-100]="isLogOpen"
+        [class.opacity-0]="!isLogOpen"
+        [class.pointer-events-none]="!isLogOpen"
+        (click)="closeLog()"
+    ></div>
+
+    <!-- Panel -->
+    <div 
+        class="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transition-transform duration-300 transform dark:bg-card border-l border-gray-200 dark:border-gray-800 flex flex-col"
+        [class.translate-x-0]="isLogOpen"
+        [class.translate-x-full]="!isLogOpen"
+    >
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+            <h3 class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg class="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Postman Execution Log
+            </h3>
+            <button (click)="closeLog()" class="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300 transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900/50">
+            <p class="text-sm font-medium text-gray-500 mb-2 dark:text-gray-400">Raw Output:</p>
+            <div class="rounded-xl bg-gray-900 p-4 shadow-inner w-full min-h-[300px] text-sm overflow-x-auto text-gray-300 font-mono leading-relaxed border border-gray-800">
+                <pre class="whitespace-pre-wrap">{{ selectedLog }}</pre>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-100 bg-white dark:bg-card dark:border-gray-800 flex justify-end">
+            <button (click)="closeLog()" class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200 transition-colors dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                Close
+            </button>
+        </div>
+    </div>
+</div>

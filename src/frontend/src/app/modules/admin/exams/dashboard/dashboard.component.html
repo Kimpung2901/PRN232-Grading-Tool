@@ -1,0 +1,220 @@
+<div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent">
+    <!-- BREADCRUMB HEADER -->
+    <div
+        class="flex items-center justify-between border-b bg-white px-8 py-4 text-sm dark:bg-card"
+    >
+        <span class="font-semibold text-gray-800 dark:text-white">Exams</span>
+        <div class="text-secondary flex items-center gap-1">
+            <span class="font-semibold text-primary">Dashboard</span>
+        </div>
+    </div>
+
+    <!-- HEADER + FILTER CARD -->
+    <div
+        class="mx-8 mb-6 mt-8 rounded-2xl border border-gray-100 bg-white px-6 py-5 shadow-sm dark:bg-card"
+    >
+        <!-- TOP ROW -->
+        <div class="flex items-start justify-between">
+            <div>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                    Exam Dashboard
+                </h2>
+                <p class="text-secondary mt-0.5 text-sm">
+                    Manage and filter exams
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button
+                    (click)="createNewExam()"
+                    class="flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
+                >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create New Exam
+                </button>
+                <button
+                    (click)="toggleFilter()"
+                    class="flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                    <svg
+                        class="h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
+                        />
+                    </svg>
+                    Filter
+                </button>
+                
+                <!-- Toggle collapse -->
+                <button
+                    (click)="toggleFilter()"
+                    class="ml-1 rounded-full border border-gray-200 p-2 text-gray-400 transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
+                >
+                    <svg
+                        class="h-4 w-4 transition-transform duration-300"
+                        [class.rotate-180]="filterOpen"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- COLLAPSIBLE FILTER FIELDS -->
+        <div [@collapseFilter]="filterOpen ? 'open' : 'closed'">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 pt-4 border-t border-gray-100 mt-4 dark:border-gray-800">
+                <!-- Semester Filter -->
+                <div class="flex flex-col">
+                    <label class="text-secondary mb-1 ml-1 text-xs">Semester</label>
+                    <mat-form-field appearance="outline" class="fuse-mat-small w-full" subscriptSizing="dynamic">
+                        <mat-select [(ngModel)]="selectedSemester">
+                            <mat-option *ngFor="let s of semesters" [value]="s">
+                                {{ s }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="flex justify-end mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <button 
+                    (click)="resetFilter()"
+                    class="text-sm text-gray-500 hover:text-gray-700 font-medium px-4 py-2 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                    Reset
+                </button>
+                <button 
+                    (click)="applyFilter()"
+                    class="ml-2 bg-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-indigo-700"
+                >
+                    Apply Filter
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-6 px-8 pb-8">
+        <!-- STAT CARDS -->
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div
+                *ngFor="let stat of stats"
+                class="rounded-2xl border border-gray-100 bg-white px-5 py-4 shadow-sm transition-all dark:bg-card hover:shadow-md"
+            >
+                <div class="mb-3 flex items-center justify-between">
+                    <div
+                        class="flex h-9 w-9 items-center justify-center rounded-xl"
+                        [ngClass]="stat.bg"
+                    >
+                        <svg class="h-5 w-5" [ngClass]="stat.icon" fill="currentColor" viewBox="0 0 20 20">
+                            <!-- Placeholder icon -->
+                            <path d="M2 10a8 8 0 1116 0A8 8 0 012 10zm9-3a1 1 0 00-2 0v2H7a1 1 0 000 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"/>
+                        </svg>
+                    </div>
+                    <span
+                        class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                        [ngClass]="
+                            stat.up
+                                ? 'bg-emerald-50 text-emerald-600'
+                                : 'bg-red-50 text-red-600'
+                        "
+                    >
+                        {{ stat.trend }}
+                    </span>
+                </div>
+                <div class="text-2xl font-extrabold text-gray-900 dark:text-white">
+                    {{ stat.value }}
+                </div>
+                <div class="text-secondary mt-1 text-xs font-medium">
+                    {{ stat.title }}
+                </div>
+            </div>
+        </div>
+
+        <!-- EXAM LIST -->
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm dark:bg-card">
+            <div class="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">
+                    All Exams
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-secondary border-b border-gray-100 bg-gray-50/50 text-xs uppercase dark:border-gray-800 dark:bg-gray-800/50">
+                            <th class="px-6 py-3 text-left font-semibold">Exam Name</th>
+                            <th class="px-6 py-3 text-left font-semibold">Semester</th>
+                            <th class="px-6 py-3 text-left font-semibold">Status</th>
+                            <th class="px-6 py-3 text-center font-semibold">Test Cases</th>
+                            <th class="px-6 py-3 text-center font-semibold">Submissions</th>
+                            <th class="px-6 py-3 text-right font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                        <tr
+                            *ngFor="let exam of exams"
+                            class="transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/50"
+                        >
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-gray-900 dark:text-white">
+                                    {{ exam.name }}
+                                </div>
+                                <div class="text-secondary text-xs mt-0.5">
+                                    {{ exam.id }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
+                                {{ exam.semester }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span
+                                    class="rounded-full px-2.5 py-1 text-xs font-medium inline-block"
+                                    [ngClass]="exam.statusColor"
+                                >
+                                    {{ exam.status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-center font-medium text-gray-700 dark:text-gray-300">
+                                {{ exam.testCases }}
+                            </td>
+                            <td class="px-6 py-4 text-center font-medium text-gray-700 dark:text-gray-300">
+                                {{ exam.submissions }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button 
+                                        (click)="viewDetails(exam.id)"
+                                        class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                                    >
+                                        Details
+                                    </button>
+                                    <button 
+                                        (click)="manageTestCases(exam.id)"
+                                        class="rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+                                    >
+                                        Test Cases
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

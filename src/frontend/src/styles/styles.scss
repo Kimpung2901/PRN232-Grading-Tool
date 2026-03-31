@@ -1,0 +1,98 @@
+/* ----------------------------------------------------------------------------------------------------- */
+/*  @ Import/write your custom styles here.
+/*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
+/* ----------------------------------------------------------------------------------------------------- */
+
+.dark .bg-\[\#F1F5F9\].dark\:bg-transparent {
+    background-color: #0f172a !important;
+}
+
+.dark .bg-white {
+    background-color: #111827 !important;
+}
+
+.dark .bg-gray-50 {
+    background-color: #1e293b !important;
+}
+
+.dark .border-gray-100 {
+    border-color: #334155 !important;
+}
+
+.dark .border-gray-200 {
+    border-color: #334155 !important;
+}
+
+.dark .bg-gray-50\/50 {
+    background-color: rgba(30, 41, 59, 0.45) !important;
+}
+
+.dark .text-gray-500 {
+    color: #94a3b8 !important;
+}
+
+.dark .text-gray-600 {
+    color: #cbd5e1 !important;
+}
+
+.dark .text-gray-700 {
+    color: #e2e8f0 !important;
+}
+
+.dark .text-gray-800,
+.dark .text-gray-900 {
+    color: #f8fafc !important;
+}
+
+.dark .text-black {
+    color: #f8fafc !important;
+}
+
+.dark .placeholder-gray-400::placeholder {
+    color: #94a3b8 !important;
+}
+
+.cdk-overlay-pane.user-dialog .mat-mdc-dialog-container .mdc-dialog__surface,
+.cdk-overlay-pane.team-dialog .mat-mdc-dialog-container .mdc-dialog__surface,
+.cdk-overlay-pane.department-dialog .mat-mdc-dialog-container .mdc-dialog__surface {
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 16px !important;
+}
+
+.dark input:not([type='checkbox']):not([type='radio']):not([type='range']),
+.dark textarea,
+.dark select {
+    color: #e2e8f0 !important;
+    caret-color: #e2e8f0 !important;
+}
+
+.dark input:not([type='checkbox']):not([type='radio']):not([type='range'])::placeholder,
+.dark textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+.dark input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+.dark textarea:focus,
+.dark select:focus {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+.dark .apexcharts-title-text,
+.dark .apexcharts-subtitle-text,
+.dark .apexcharts-legend-text,
+.dark .apexcharts-xaxis-label,
+.dark .apexcharts-yaxis-label,
+.dark .apexcharts-datalabel,
+.dark .apexcharts-text {
+    fill: #cbd5e1 !important;
+    color: #cbd5e1 !important;
+}
+
+.dark .apexcharts-gridline,
+.dark .apexcharts-xaxis line,
+.dark .apexcharts-yaxis line {
+    stroke: #334155 !important;
+}

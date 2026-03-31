@@ -1,0 +1,125 @@
+<div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent">
+    <div class="bg-card border-b">
+        <div class="flex w-full flex-col px-6 sm:px-8">
+            <div class="flex min-h-32 flex-col py-8 sm:flex-row sm:items-center sm:justify-between sm:py-0">
+                <div class="flex flex-col truncate">
+                    <div class="font-sans text-3xl font-bold leading-none tracking-tight truncate text-slate-900 dark:text-white">
+                        REST API Grading Tool
+                    </div>
+                    <div class="text-secondary mt-2 flex flex-wrap items-center gap-x-2 text-sm font-medium">
+                        <span>Admin dashboard — Overview</span>
+                        <span class="text-slate-300">|</span>
+                        <a
+                            routerLink="/exams/data"
+                            class="text-blue-600 hover:underline dark:text-blue-400"
+                            >Exam management</a
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto -mt-px border-t pt-4 sm:pt-6">
+        <div class="w-full px-6 sm:px-8">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <a
+                    *ngFor="let stat of stats"
+                    [routerLink]="stat.link"
+                    class="bg-card group flex flex-auto flex-col overflow-hidden rounded-2xl border border-transparent shadow transition hover:border-blue-200 hover:shadow-md dark:hover:border-blue-900"
+                >
+                    <div class="m-6 mb-4 flex items-start justify-between">
+                        <div class="truncate text-lg font-semibold text-slate-800 dark:text-slate-100">
+                            {{ stat.title }}
+                        </div>
+                        <div
+                            class="ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
+                            [ngClass]="stat.bg"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                [svgIcon]="stat.icon"
+                                [ngClass]="stat.text"
+                            ></mat-icon>
+                        </div>
+                    </div>
+                    <div class="mb-6 mt-1 flex flex-col px-6">
+                        <div
+                            class="text-4xl font-bold leading-none tracking-tight"
+                            [ngClass]="stat.text"
+                        >
+                            {{ stat.value }}
+                        </div>
+                        <div class="text-secondary mt-2 text-xs font-medium">
+                            {{ stat.subtitle }}
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <div class="bg-card flex flex-col rounded-2xl border border-slate-100 shadow dark:border-slate-800 lg:col-span-2">
+                    <div class="flex items-center justify-between border-b px-6 py-4">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+                            Submissions &amp; pass rate by week
+                        </h3>
+                    </div>
+                    <div class="p-4 sm:p-6">
+                        <apx-chart
+                            [series]="mainChartSeries"
+                            [chart]="mainChartOptions.chart!"
+                            [xaxis]="mainChartOptions.xaxis!"
+                            [stroke]="mainChartOptions.stroke!"
+                            [colors]="mainChartOptions.colors!"
+                            [fill]="mainChartOptions.fill!"
+                            [dataLabels]="mainChartOptions.dataLabels!"
+                            [legend]="mainChartOptions.legend!"
+                            [tooltip]="mainChartOptions.tooltip!"
+                            [grid]="mainChartOptions.grid!"
+                        ></apx-chart>
+                    </div>
+                </div>
+
+                <div class="bg-card flex flex-col rounded-2xl border border-slate-100 shadow dark:border-slate-800">
+                    <div class="flex items-center justify-between border-b px-6 py-4">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+                            Outcome mix
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <apx-chart
+                            [series]="outcomeChartSeries"
+                            [chart]="outcomeChartOptions.chart!"
+                            [labels]="outcomeChartOptions.labels!"
+                            [colors]="outcomeChartOptions.colors!"
+                            [legend]="outcomeChartOptions.legend!"
+                            [plotOptions]="outcomeChartOptions.plotOptions!"
+                            [dataLabels]="outcomeChartOptions.dataLabels!"
+                        ></apx-chart>
+                        <p class="text-secondary mt-2 text-center text-xs">
+                            Green = Pass · Red = Fail · Amber = Skipped
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-wrap gap-3 pb-10">
+                <a
+                    mat-flat-button
+                    color="primary"
+                    routerLink="/submissions/data"
+                    class="!rounded-full"
+                >
+                    Open submissions board
+                </a>
+                <a
+                    mat-stroked-button
+                    routerLink="/exams/data"
+                    class="!rounded-full"
+                >
+                    Exam management
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

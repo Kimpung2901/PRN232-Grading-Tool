@@ -1,0 +1,124 @@
+<div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent">
+    <!-- ─── BREADCRUMB HEADER ─────────────────────────────────────────── -->
+    <div class="flex items-center justify-between border-b bg-white px-8 py-4 text-sm dark:bg-card">
+        <span class="font-semibold text-gray-800 dark:text-white">Submissions</span>
+        <div class="text-secondary flex items-center gap-1">
+            <span>Dashboard</span>
+            <span>•</span>
+            <span class="font-semibold text-primary">Submissions</span>
+        </div>
+    </div>
+
+    <!-- ─── DASHBOARD BODY ────────────────────────────────────────────── -->
+    <div class="mx-8 mb-6 mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card">
+        <!-- Dashboard Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Student Submissions</h2>
+                <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Track and manage student project uploads.</p>
+            </div>
+            <div class="mt-4 sm:mt-0 flex items-center gap-3">
+                <button [routerLink]="['/submissions/create']" class="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Submission
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-gray-50/50 p-4 border-b border-gray-100 dark:bg-gray-800/50 dark:border-gray-700">
+            <div class="flex flex-wrap gap-4 items-center">
+                <!-- Search -->
+                <div class="relative max-w-sm flex-1 min-w-[200px]">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input 
+                        type="search" 
+                        [(ngModel)]="searchQuery"
+                        class="block w-full rounded-xl border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" 
+                        placeholder="Search student name or ID..."
+                    >
+                </div>
+                <!-- Exam Filter -->
+                <div class="min-w-[200px]">
+                    <select [(ngModel)]="selectedExam" class="block w-full rounded-xl border border-gray-300 bg-white py-2 pl-3 pr-8 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        <option value="">All Exams</option>
+                        <option *ngFor="let exam of exams" [value]="exam.id">{{ exam.name }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Grid -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-white text-gray-500 dark:bg-card dark:text-gray-400">
+                    <tr>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700">ID</th>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700">Student Info</th>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700">Exam</th>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700">File Name</th>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700">Submitted At</th>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700">Status</th>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700">Score</th>
+                        <th class="px-6 py-4 font-medium border-b border-gray-100 dark:border-gray-700 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                    <tr *ngFor="let sub of filteredSubmissions" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td class="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">{{ sub.id }}</td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900 dark:text-white">{{ sub.studentName }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ sub.studentId }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-gray-700 dark:text-gray-300">{{ sub.examName }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span class="text-gray-700 dark:text-gray-300">{{ sub.fileName }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 dark:text-gray-400">{{ sub.submittedAt }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold border" [ngClass]="getStatusClass(sub.status)">
+                                {{ sub.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span *ngIf="sub.score" class="font-bold text-gray-900 dark:text-white">{{ sub.score | number:'1.1-2' }}</span>
+                            <span *ngIf="!sub.score" class="text-gray-400">-</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button [routerLink]="['/submissions', sub.id]" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium text-sm transition-colors">
+                                View Result
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="filteredSubmissions.length === 0">
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-col items-center justify-center">
+                                <svg class="h-10 w-10 text-gray-300 dark:text-gray-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <p class="text-base font-medium">No submissions found</p>
+                                <p class="text-sm">Try adjusting your filters or upload a new submission.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination Placeholder -->
+        <div class="border-t border-gray-100 px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 dark:border-gray-700 flex justify-between items-center text-sm text-gray-500 rounded-b-2xl">
+            <span>Showing {{ filteredSubmissions.length }} entries</span>
+        </div>
+    </div>
+</div>

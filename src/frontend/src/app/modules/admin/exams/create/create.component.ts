@@ -1,27 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import {
-    FormBuilder,
-    FormGroup,
-    FormsModule,
-    ReactiveFormsModule,
-    Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { ExamsService } from '../../../../services/exams.service';
 
 @Component({
     selector: 'app-exams-create',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, MatFormFieldModule, MatSelectModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
     templateUrl: './create.component.html',
 })
 export class CreateComponent {
     form: FormGroup;
     isDragging = false;
     uploadedFile: File | null = null;
+    isSubmitting = false;
 
     constructor(
         private fb: FormBuilder,
@@ -33,7 +26,6 @@ export class CreateComponent {
         });
     }
 
-    // Drag & Drop for Postman Collection File
     onDragOver(event: DragEvent): void {
         event.preventDefault();
         this.isDragging = true;
@@ -80,31 +72,31 @@ export class CreateComponent {
     }
 
     onSubmit(): void {
-        if (this.form.valid) {
-            if (!this.uploadedFile) {
-                alert('Please upload an SQL Initialization Script.');
-                return;
-            }
-            
-            this.examsService.createExam({ 
-                body: { 
-                    ExamName: this.form.value.name, 
-                    SqlFile: this.uploadedFile 
-                } 
+        if (this.form.valid && this.uploadedFile) {
+            this.isSubmitting = true;
+            this.examsService.createExam({
+                body: {
+                    ExamName: this.form.value.name,
+                    SqlFile: this.uploadedFile
+                }
             }).subscribe({
-                next: () => this.router.navigate(['/exams/dashboard']),
-                error: (err) => console.error('Error creating exam', err)
+                next: () => {
+                    this.isSubmitting = false;
+                    this.router.navigate(['/exams']);
+                },
+                error: (err) => {
+                    this.isSubmitting = false;
+                    console.error('Error creating exam', err);
+                }
             });
+        } else if (!this.uploadedFile) {
+            alert('Please upload an SQL Initialization Script.');
         } else {
             this.form.markAllAsTouched();
         }
     }
 
     onCancel(): void {
-        this.router.navigate(['/exams/dashboard']);
-    }
-
-    backToExams(): void {
-        this.router.navigate(['/exams/dashboard']);
+        this.router.navigate(['/exams']);
     }
 }

@@ -24,18 +24,12 @@ export const defaultNavigation: FuseNavigationItem[] = [
         icon: 'heroicons_outline:academic-cap',
         children: [
             {
-                id: 'exams.dashboard',
-                title: 'Dashboard',
-                type: 'basic',
-                icon: 'heroicons_outline:chart-pie',
-                link: '/exams/dashboard',
-            },
-            {
                 id: 'exams.list',
                 title: 'Exams',
                 type: 'basic',
                 icon: 'heroicons_outline:academic-cap',
                 link: '/exams/data',
+                exactMatch: false
             },
             {
                 id: 'exams.create',
@@ -43,6 +37,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:plus-circle',
                 link: '/exams/create',
+                exactMatch: true
             },
         ],
     },
@@ -53,18 +48,12 @@ export const defaultNavigation: FuseNavigationItem[] = [
         icon: 'heroicons_outline:cloud-arrow-up',
         children: [
             {
-                id: 'submissions.dashboard',
-                title: 'Dashboard',
-                type: 'basic',
-                icon: 'heroicons_outline:chart-pie',
-                link: '/submissions/dashboard',
-            },
-            {
                 id: 'submissions.list',
                 title: 'Submissions',
                 type: 'basic',
                 icon: 'heroicons_outline:cloud-arrow-up',
                 link: '/submissions/data',
+                exactMatch: false
             },
             {
                 id: 'submissions.create',
@@ -72,10 +61,10 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:plus-circle',
                 link: '/submissions/create',
+                exactMatch: true
             },
         ],
     },
-    
 ];
 
 export const compactNavigation: FuseNavigationItem[] = defaultNavigation;

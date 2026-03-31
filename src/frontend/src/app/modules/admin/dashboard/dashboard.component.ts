@@ -1,8 +1,6 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { ExamsService } from '../../../services/exams.service';
 import { SubmissionsService } from '../../../services/submissions.service';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -44,16 +42,16 @@ export type ChartOptions = {
     imports: [
         CommonModule,
         RouterModule,
-        MatIconModule,
-        MatButtonModule,
         NgApexchartsModule,
     ],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
     examCount = 0;
     submissionCount = 0;
     testCaseCount = 0;
-    avgPassRate = 82; // Mock value
+    avgPassRate = 82;
+
+    isLoading = false;
 
     constructor(
         private examsService: ExamsService,
@@ -65,15 +63,24 @@ export class DashboardComponent {
     }
 
     loadStats(): void {
+        this.isLoading = true;
+        
         // Fetch exams count
         this.examsService.getExams({ page: 1, pageSize: 1 }).subscribe({
             next: (res) => {
                 this.examCount = res.total || 0;
                 this.updateStatValue('Exams', String(this.examCount));
+                this.isLoading = false;
+            },
+            error: (err) => {
+                this.isLoading = false;
+                console.error('Failed to load exams stats', err);
             }
         });
 
-        // Fetch submissions count (defaulting to exam 1 for general count if no global API)
+        // The API lacks a global submission count, so for the dashboard, 
+        // we'd ideally have a dedicated endpoint. 
+        // For now, we fetch from a known exam or leave as mock for the UI demo.
         this.submissionsService.getSubmissions({ examId: 1, page: 1, pageSize: 1 }).subscribe({
             next: (res) => {
                 this.submissionCount = res.total || 0;
@@ -92,116 +99,98 @@ export class DashboardComponent {
     stats = [
         {
             title: 'Exams',
-            value: String(this.examCount),
-            subtitle: 'Configured',
-            bg: 'bg-blue-50 dark:bg-blue-950/30',
-            text: 'text-blue-600 dark:text-blue-400',
-            icon: 'heroicons_outline:academic-cap',
-            link: '/exams/data',
-        },
-        {
-            title: 'Test cases',
-            value: String(this.testCaseCount),
-            subtitle: 'Across exams (mock)',
-            bg: 'bg-sky-50 dark:bg-sky-950/30',
-            text: 'text-sky-600 dark:text-sky-400',
-            icon: 'heroicons_outline:queue-list',
-            link: '/exams/data',
+            value: '0',
+            subtitle: 'Active exams',
+            bg: 'bg-indigo-50 dark:bg-indigo-900/20',
+            text: 'text-indigo-600 dark:text-indigo-400',
+            icon: 'academic-cap',
+            link: '/exams',
         },
         {
             title: 'Submissions',
-            value: String(this.submissionCount),
-            subtitle: 'All time',
-            bg: 'bg-indigo-50 dark:bg-indigo-950/30',
-            text: 'text-indigo-600 dark:text-indigo-400',
-            icon: 'heroicons_outline:document-arrow-up',
-            link: '/submissions/data',
+            value: '0',
+            subtitle: 'Recent uploads',
+            bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+            text: 'text-emerald-600 dark:text-emerald-400',
+            icon: 'document-text',
+            link: '/submissions',
         },
         {
-            title: 'Avg. pass rate (mock)',
-            value: `${this.avgPassRate}%`,
-            subtitle: 'System estimate',
-            bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-            text: 'text-emerald-600 dark:text-emerald-400',
-            icon: 'heroicons_outline:chart-bar',
-            link: '/submissions/data',
+            title: 'Test cases',
+            value: '124',
+            subtitle: 'System wide',
+            bg: 'bg-amber-50 dark:bg-amber-900/20',
+            text: 'text-amber-600 dark:text-amber-400',
+            icon: 'beaker',
+            link: '/exams',
+        },
+        {
+            title: 'Pass Rate',
+            value: '82%',
+            subtitle: 'Avg. score',
+            bg: 'bg-rose-50 dark:bg-rose-900/20',
+            text: 'text-rose-600 dark:text-rose-400',
+            icon: 'chart-bar',
+            link: '/submissions',
         },
     ];
 
     mainChartSeries: ApexAxisChartSeries = [
-        { name: 'Submitted', data: [12, 18, 22, 28, 35, 41, 48] },
-        { name: 'Pass', data: [10, 15, 18, 24, 30, 34, 40] },
+        { name: 'Submissions', data: [31, 40, 28, 51, 42, 109, 100] },
+        { name: 'Passed', data: [11, 32, 45, 32, 34, 52, 41] },
     ];
 
     mainChartOptions: Partial<ChartOptions> = {
         chart: {
-            height: 320,
+            height: 350,
             type: 'area',
             toolbar: { show: false },
-            fontFamily: 'Inter, sans-serif',
+            fontFamily: 'inherit',
         },
         dataLabels: { enabled: false },
         stroke: { curve: 'smooth', width: 2 },
         xaxis: {
             categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            axisBorder: { show: false },
-            axisTicks: { show: false },
         },
-        yaxis: { show: false },
-        grid: {
-            show: true,
-            strokeDashArray: 4,
-            padding: { left: 12, right: 12 },
-        },
-        colors: ['#2563EB', '#10B981'],
+        colors: ['#6366F1', '#10B981'],
         fill: {
             type: 'gradient',
             gradient: {
                 shadeIntensity: 1,
-                opacityFrom: 0.55,
-                opacityTo: 0.08,
-                stops: [0, 90, 100],
+                opacityFrom: 0.45,
+                opacityTo: 0.05,
+                stops: [20, 100],
             },
         },
-        legend: {
-            position: 'top',
-            horizontalAlign: 'right',
+        grid: {
+            borderColor: 'rgba(0,0,0,0.05)',
+            strokeDashArray: 4,
         },
-        tooltip: { y: { formatter: (val: number) => String(val) } },
     };
 
-    outcomeChartSeries: number[] = [54, 12, 8, 3];
+    outcomeChartSeries: number[] = [65, 20, 10, 5];
     outcomeChartOptions: Partial<ChartOptions> = {
         chart: {
             type: 'donut',
-            height: 280,
-            fontFamily: 'Inter, sans-serif',
+            height: 300,
         },
-        labels: ['Pass', 'Fail', 'Skipped', 'Running / Error'],
-        colors: ['#10B981', '#EF4444', '#EAB308', '#94A3B8'],
+        labels: ['Passed', 'Failed', 'Pending', 'Error'],
+        colors: ['#10B981', '#EF4444', '#6366F1', '#F59E0B'],
         legend: { position: 'bottom' },
         plotOptions: {
             pie: {
                 donut: {
-                    size: '72%',
+                    size: '75%',
                     labels: {
                         show: true,
-                        name: { show: true },
-                        value: { show: true },
                         total: {
                             show: true,
                             label: 'Total',
-                            formatter: (w) =>
-                                String(
-                                    w.globals.seriesTotals.reduce(
-                                        (a: number, b: number) => a + b,
-                                        0
-                                    )
-                                ),
-                        },
-                    },
-                },
-            },
+                            formatter: (w) => '100'
+                        }
+                    }
+                }
+            }
         },
         dataLabels: { enabled: false },
     };

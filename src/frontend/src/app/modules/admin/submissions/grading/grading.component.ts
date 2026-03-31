@@ -20,6 +20,7 @@ export class GradingComponent implements OnInit {
     isLogOpen = false;
     
     results: SubmissionTestResultDto[] = [];
+    isLoading = false;
     isProcessing = false;
 
     constructor(
@@ -28,7 +29,9 @@ export class GradingComponent implements OnInit {
     ) {
         const idParam = this.route.snapshot.paramMap.get('id');
         this.submissionId = idParam ? parseInt(idParam, 10) : 0;
-        
+    }
+
+    ngOnInit(): void {
         this.route.queryParams.subscribe(params => {
             this.examId = params['examId'] ? parseInt(params['examId'], 10) : 0;
             if (this.submissionId && this.examId) {
@@ -39,17 +42,15 @@ export class GradingComponent implements OnInit {
         });
     }
 
-    ngOnInit(): void {}
-
     loadSubmissionAndReport(): void {
-        this.isProcessing = true;
+        this.isLoading = true;
         this.submissionsService.getSubmissionById({ id: this.submissionId }).subscribe({
             next: (s) => {
                 this.examId = s.examId || 0;
                 this.loadReport();
             },
             error: (err) => {
-                this.isProcessing = false;
+                this.isLoading = false;
                 console.error('Failed to load submission for report', err);
             }
         });
@@ -58,7 +59,7 @@ export class GradingComponent implements OnInit {
     loadReport(): void {
         if (!this.examId || !this.submissionId) return;
 
-        this.isProcessing = true;
+        this.isLoading = true;
         this.submissionsService.getSubmissionReports({ examId: this.examId }).subscribe({
             next: (reports) => {
                 const report = reports.find(r => r.submissionId === this.submissionId);
@@ -66,9 +67,11 @@ export class GradingComponent implements OnInit {
                     this.totalScore = report.totalScore || 0;
                     this.results = report.results || [];
                 }
-                this.isProcessing = false;
+                this.isLoading = false;
+                this.isProcessing = false; 
             },
             error: (err) => {
+                this.isLoading = false;
                 this.isProcessing = false;
                 console.error('Failed to load grading report', err);
             }
@@ -94,6 +97,6 @@ export class GradingComponent implements OnInit {
         this.isLogOpen = false;
         setTimeout(() => {
             this.selectedLog = null;
-        }, 300); // Wait for transition
+        }, 300);
     }
 }

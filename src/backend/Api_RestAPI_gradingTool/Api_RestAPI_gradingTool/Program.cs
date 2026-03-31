@@ -39,10 +39,11 @@ builder.Services.AddScoped<Application.Contracts.Management.IExamService, Applic
 builder.Services.AddScoped<Application.Contracts.Management.ITestCaseService, Application.Services.TestCaseService>();
 builder.Services.AddScoped<Application.Contracts.Management.ISubmissionService, Application.Services.SubmissionService>();
 
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:4200" };
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFE", p =>
-        p.WithOrigins("http://localhost:5173")
+        p.WithOrigins(allowedOrigins)
          .AllowAnyHeader()
          .AllowAnyMethod()
          .AllowCredentials());

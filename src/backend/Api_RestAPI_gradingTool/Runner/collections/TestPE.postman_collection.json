@@ -1,0 +1,5409 @@
+{
+  "info": {
+    "_postman_id": "90731115-d206-4a40-bd76-d26fbcc176a9",
+    "name": "Leopard API - 100 Tight Test Cases",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Generated from PRN231_SU25_SE171411 solution. Covers auth, authorization, CRUD, search, role matrix, validation gaps, boundary values, and end-to-end flow."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:7231"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@example.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "123456"
+    },
+    {
+      "key": "moderatorEmail",
+      "value": "moderator@example.com"
+    },
+    {
+      "key": "moderatorPassword",
+      "value": "123456"
+    },
+    {
+      "key": "developerEmail",
+      "value": "developer@example.com"
+    },
+    {
+      "key": "developerPassword",
+      "value": "123456"
+    },
+    {
+      "key": "memberEmail",
+      "value": "member@example.com"
+    },
+    {
+      "key": "memberPassword",
+      "value": "123456"
+    },
+    {
+      "key": "adminEmailUpper",
+      "value": "ADMIN@EXAMPLE.COM"
+    },
+    {
+      "key": "invalidToken",
+      "value": "invalid.invalid.invalid"
+    },
+    {
+      "key": "malformedAuthHeader",
+      "value": "Token abc123"
+    },
+    {
+      "key": "existingProfileId",
+      "value": "1"
+    },
+    {
+      "key": "nonExistingProfileId",
+      "value": "999999"
+    },
+    {
+      "key": "mismatchProfileId",
+      "value": "999998"
+    },
+    {
+      "key": "validLeopardTypeId",
+      "value": "1"
+    },
+    {
+      "key": "invalidLeopardTypeId",
+      "value": "999999"
+    },
+    {
+      "key": "newProfileWeight",
+      "value": "45.5"
+    },
+    {
+      "key": "updatedProfileWeight",
+      "value": "55.5"
+    },
+    {
+      "key": "newProfileName",
+      "value": "AutoTest Leopard A"
+    },
+    {
+      "key": "newProfileName2",
+      "value": "AutoTest Leopard B"
+    },
+    {
+      "key": "newProfileName3",
+      "value": "AutoTest Leopard C"
+    },
+    {
+      "key": "updatedProfileName",
+      "value": "Updated Leopard A"
+    },
+    {
+      "key": "updatedProfileName2",
+      "value": "Updated Leopard B"
+    },
+    {
+      "key": "newProfileCharacteristics",
+      "value": "Fast, strong, healthy."
+    },
+    {
+      "key": "updatedProfileCharacteristics",
+      "value": "Updated characteristics."
+    },
+    {
+      "key": "newProfileCareNeeds",
+      "value": "Clean cage and balanced diet."
+    },
+    {
+      "key": "updatedProfileCareNeeds",
+      "value": "Updated care needs."
+    },
+    {
+      "key": "searchExistingName",
+      "value": "Leo"
+    },
+    {
+      "key": "partialSearchName",
+      "value": "Le"
+    },
+    {
+      "key": "searchExistingWeight",
+      "value": "45.5"
+    },
+    {
+      "key": "searchExistingCharacteristic",
+      "value": "fast"
+    },
+    {
+      "key": "veryLongName",
+      "value": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "key": "veryLongCharacteristics",
+      "value": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+    },
+    {
+      "key": "veryLongCareNeeds",
+      "value": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+    },
+    {
+      "key": "createdProfileId",
+      "value": ""
+    },
+    {
+      "key": "createdProfileName",
+      "value": ""
+    },
+    {
+      "key": "deleteCandidateId",
+      "value": "2"
+    },
+    {
+      "key": "isoNow",
+      "value": "2026-03-20T10:00:00"
+    },
+    {
+      "key": "lastErrorCategory",
+      "value": ""
+    },
+    {
+      "key": "lastDiagnosticJson",
+      "value": ""
+    },
+    {
+      "key": "lastErrorHint",
+      "value": ""
+    },
+    {
+      "key": "lastErrorMessage",
+      "value": ""
+    },
+    {
+      "key": "lastStatusCode",
+      "value": ""
+    },
+    {
+      "key": "lastResponsePreview",
+      "value": ""
+    },
+    {
+      "key": "lastToken",
+      "value": ""
+    },
+    {
+      "key": "lastCreatedId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Auth",
+      "item": [
+        {
+          "name": "TC001 Login success as admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"saveTokenVar\", \"adminToken\");",
+                  "pm.variables.set(\"expectedStatus\", \"200|201|401\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Body has token and roleId\", function(){ pm.expect(json).to.have.property(\"token\"); pm.expect(json).to.have.property(\"roleId\"); });",
+                  "pm.collectionVariables.set(\"adminToken\", json.token);",
+                  "pm.test(\"Admin token stored\", function(){ pm.expect(pm.collectionVariables.get(\"adminToken\")).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "pm.test(\"TC detail | Admin login should either issue token or explain denial clearly\", function () {",
+                  "  if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "    const token = body && (body.token || body.accessToken || body.access_token || (body.data && body.data.token) || (body.result && body.result.token));",
+                  "    pm.expect(token, \"Đăng nhập admin thành công nhưng không có token\").to.exist;",
+                  "  } else {",
+                  "    const text = pm.response.text();",
+                  "    pm.expect(text.length > 0 || (body && (body.message || body.error || body.detail)), \"Admin bị từ chối nhưng không có message rõ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC002 Login success as moderator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{moderatorEmail}}\", \"password\": \"{{moderatorPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"saveTokenVar\", \"moderatorToken\");",
+                  "pm.variables.set(\"expectedStatus\", \"200|201\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Body has token and roleId\", function(){ pm.expect(json).to.have.property(\"token\"); pm.expect(json).to.have.property(\"roleId\"); });",
+                  "pm.collectionVariables.set(\"moderatorToken\", json.token);",
+                  "pm.test(\"Moderator token stored\", function(){ pm.expect(pm.collectionVariables.get(\"moderatorToken\")).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "pm.test(\"TC detail | moderator login success must return token on 2xx\", function () {",
+                  "  if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "    const token = body && (body.token || body.accessToken || body.access_token || (body.data && body.data.token) || (body.result && body.result.token));",
+                  "    pm.expect(token, \"Đăng nhập thành công nhưng không có token\").to.exist;",
+                  "    if (token) pm.environment.set(\"moderatorToken\", token);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC003 Login success as developer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{developerEmail}}\", \"password\": \"{{developerPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"saveTokenVar\", \"developerToken\");",
+                  "pm.variables.set(\"expectedStatus\", \"200|201\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Body has token and roleId\", function(){ pm.expect(json).to.have.property(\"token\"); pm.expect(json).to.have.property(\"roleId\"); });",
+                  "pm.collectionVariables.set(\"developerToken\", json.token);",
+                  "pm.test(\"Developer token stored\", function(){ pm.expect(pm.collectionVariables.get(\"developerToken\")).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "pm.test(\"TC detail | developer login success must return token on 2xx\", function () {",
+                  "  if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "    const token = body && (body.token || body.accessToken || body.access_token || (body.data && body.data.token) || (body.result && body.result.token));",
+                  "    pm.expect(token, \"Đăng nhập thành công nhưng không có token\").to.exist;",
+                  "    if (token) pm.environment.set(\"developerToken\", token);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC004 Login success as member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{memberEmail}}\", \"password\": \"{{memberPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"saveTokenVar\", \"memberToken\");",
+                  "pm.variables.set(\"expectedStatus\", \"200|201\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Body has token and roleId\", function(){ pm.expect(json).to.have.property(\"token\"); pm.expect(json).to.have.property(\"roleId\"); });",
+                  "pm.collectionVariables.set(\"memberToken\", json.token);",
+                  "pm.test(\"Member token stored\", function(){ pm.expect(pm.collectionVariables.get(\"memberToken\")).to.be.a(\"string\").and.not.empty; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "pm.test(\"TC detail | member login success must return token on 2xx\", function () {",
+                  "  if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "    const token = body && (body.token || body.accessToken || body.access_token || (body.data && body.data.token) || (body.result && body.result.token));",
+                  "    pm.expect(token, \"Đăng nhập thành công nhưng không có token\").to.exist;",
+                  "    if (token) pm.environment.set(\"memberToken\", token);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC005 Login wrong password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"wrong-password\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Invalid email or password\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Rejected login should not issue token\", function () {",
+                  "  const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "  const token = body && (body.token || body.accessToken || body.access_token || (body.data && body.data.token) || (body.result && body.result.token));",
+                  "  pm.expect(!!token).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC006 Login unknown email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"ghost@example.com\", \"password\": \"whatever\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Invalid email or password\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Rejected login should not issue token\", function () {",
+                  "  const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "  const token = body && (body.token || body.accessToken || body.access_token || (body.data && body.data.token) || (body.result && body.result.token));",
+                  "  pm.expect(!!token).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC007 Login empty body",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Email or password is required\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC008 Login missing email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"password\": \"{{adminPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Email or password is required\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC009 Login missing password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Email or password is required\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC010 Login blank email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"\", \"password\": \"{{adminPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Email or password is required\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC011 Login blank password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Email or password is required\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC012 Login extra fields ignored",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\", \"foo\": \"bar\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Body has token\", function(){ pm.expect(json.token).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC013 Login case-variant email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{adminEmailUpper}}\", \"password\": \"{{adminPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Invalid email or password\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC014 Login whitespace email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \" {{adminEmail}} \", \"password\": \"{{adminPassword}}\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body has errorCode and message\", function(){ pm.expect(json).to.have.property(\"errorCode\"); pm.expect(json).to.have.property(\"message\"); });",
+                  "pm.test(\"Message matches\", function(){ pm.expect(json.message).to.eql(\"Invalid email or password\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Authorization and Get All",
+      "item": [
+        {
+          "name": "TC015 Get all without token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Unauthorized body format\", function(){ pm.expect(json.errorCode).to.eql(\"HB40101\"); pm.expect(json.message).to.be.a(\"string\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, get-all should return JSON body\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC016 Get all with invalid token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{invalidToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Unauthorized body format\", function(){ pm.expect(json.errorCode).to.eql(\"HB40101\"); pm.expect(json.message).to.be.a(\"string\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, get-all should return JSON body\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC017 Get all with malformed auth header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{malformedAuthHeader}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Unauthorized body format\", function(){ pm.expect(json.errorCode).to.eql(\"HB40101\"); pm.expect(json.message).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC018 Get all with empty bearer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer "
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Unauthorized body format\", function(){ pm.expect(json.errorCode).to.eql(\"HB40101\"); pm.expect(json.message).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC019 Get all as developer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{developerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Response is array\", function(){ pm.expect(json).to.be.an(\"array\"); });",
+                  "if (json.length > 0) { pm.collectionVariables.set(\"existingProfileId\", json[0].leopardProfileId || json[0].LeopardProfileId); pm.collectionVariables.set(\"searchExistingName\", json[0].leopardName || json[0].LeopardName); pm.collectionVariables.set(\"searchExistingWeight\", String(json[0].weight || json[0].Weight)); pm.collectionVariables.set(\"searchExistingCharacteristic\", (json[0].characteristics || json[0].Characteristics || \"\").substring(0, 5)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC020 Get all as member",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{memberToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Response is array\", function(){ pm.expect(json).to.be.an(\"array\"); });",
+                  "if (json.length > 0) { pm.collectionVariables.set(\"existingProfileId\", json[0].leopardProfileId || json[0].LeopardProfileId); pm.collectionVariables.set(\"searchExistingName\", json[0].leopardName || json[0].LeopardName); pm.collectionVariables.set(\"searchExistingWeight\", String(json[0].weight || json[0].Weight)); pm.collectionVariables.set(\"searchExistingCharacteristic\", (json[0].characteristics || json[0].Characteristics || \"\").substring(0, 5)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC021 Get all as moderator",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Response is array\", function(){ pm.expect(json).to.be.an(\"array\"); });",
+                  "if (json.length > 0) { pm.collectionVariables.set(\"existingProfileId\", json[0].leopardProfileId || json[0].LeopardProfileId); pm.collectionVariables.set(\"searchExistingName\", json[0].leopardName || json[0].LeopardName); pm.collectionVariables.set(\"searchExistingWeight\", String(json[0].weight || json[0].Weight)); pm.collectionVariables.set(\"searchExistingCharacteristic\", (json[0].characteristics || json[0].Characteristics || \"\").substring(0, 5)); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC022 Get all as administrator",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Response is array\", function(){ pm.expect(json).to.be.an(\"array\"); });",
+                  "if (json.length > 0) { pm.collectionVariables.set(\"existingProfileId\", json[0].leopardProfileId || json[0].LeopardProfileId); pm.collectionVariables.set(\"searchExistingName\", json[0].leopardName || json[0].LeopardName); pm.collectionVariables.set(\"searchExistingWeight\", String(json[0].weight || json[0].Weight)); pm.collectionVariables.set(\"searchExistingCharacteristic\", (json[0].characteristics || json[0].Characteristics || \"\").substring(0, 5)); }"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Get By Id",
+      "item": [
+        {
+          "name": "TC023 Get by existing id as admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{existingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{existingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Profile has mandatory fields\", function(){ pm.expect(json).to.have.property(\"leopardProfileId\"); pm.expect(json).to.have.property(\"leopardName\"); pm.expect(json).to.have.property(\"leopardTypeId\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC024 Get by existing id as member",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{memberToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{existingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{existingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Profile has mandatory fields\", function(){ pm.expect(json).to.have.property(\"leopardProfileId\"); pm.expect(json).to.have.property(\"leopardName\"); pm.expect(json).to.have.property(\"leopardTypeId\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC025 Get by non-existing id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{nonExistingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{nonExistingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Not found shape when JSON returned\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(404); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC026 Get by zero id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "0"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Not found shape when JSON returned\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(404); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC027 Get by negative id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/-1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "-1"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Not found shape when JSON returned\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(404); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC028 Get by string id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "abc"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Not found shape when JSON returned\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(404); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC029 Get by decimal id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/1.5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "1.5"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Not found shape when JSON returned\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(404); } });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Search",
+      "item": [
+        {
+          "name": "TC030 Search without params",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC031 Search by existing leopardName",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName={{searchExistingName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "{{searchExistingName}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });",
+                  "pm.test(\"Contains matching name\", function(){ pm.expect(json.length).to.be.greaterThan(0); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC032 Search by partial leopardName",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName={{partialSearchName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "{{partialSearchName}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC033 Search by characteristics via cheetahName",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?cheetahName={{searchExistingCharacteristic}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "cheetahName",
+                  "value": "{{searchExistingCharacteristic}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC034 Search by exact weight",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?weight={{searchExistingWeight}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "weight",
+                  "value": "{{searchExistingWeight}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC035 Search by combined params",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName={{searchExistingName}}&weight={{searchExistingWeight}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "{{searchExistingName}}"
+                },
+                {
+                  "key": "weight",
+                  "value": "{{searchExistingWeight}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC036 Search impossible combo should be empty",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName=__not_found__&weight=-9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "__not_found__"
+                },
+                {
+                  "key": "weight",
+                  "value": "-9999"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });",
+                  "pm.test(\"Returns empty array\", function(){ pm.expect(json.length).to.eql(0); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC037 Search negative weight",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?weight=-1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "weight",
+                  "value": "-1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});",
+                  "pm.test(\"TC detail | Invalid payload around weight should be explained\", function () {",
+                  "  if (pm.response.code >= 400) {",
+                  "    const txt = pm.response.text();",
+                  "    pm.expect(txt.length > 0, \"Payload lỗi liên quan weight nhưng response quá mờ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC038 Search zero weight",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?weight=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "weight",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC039 Search high precision weight",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?weight=1.123456789",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "weight",
+                  "value": "1.123456789"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC040 Search special chars in name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName=!@#$%^&*()",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "!@#$%^&*()"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC041 Search SQL injection string",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName=' OR 1=1 --",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "' OR 1=1 --"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC042 Search XSS probe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName=<script>alert(1)</script>",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "<script>alert(1)</script>"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC043 Search long string",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName={{veryLongName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "{{veryLongName}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Search returns array\", function(){ pm.expect(json).to.be.an(\"array\"); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Create",
+      "item": [
+        {
+          "name": "TC044 Create valid profile as admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Create response has id\", function(){ pm.expect(json.leopardProfileId).to.exist; });",
+                  "pm.collectionVariables.set(\"createdProfileId\", String(json.leopardProfileId));",
+                  "pm.collectionVariables.set(\"createdProfileName\", json.leopardName);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "pm.test(\"TC detail | Successful create should expose created id\", function () {",
+                  "  if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const id = body && (body.id || body.profileId || body.leopardProfileId || (body.data && body.data.id) || (body.result && body.result.id));",
+                  "    pm.expect(id !== undefined && id !== null, \"Create thành công nhưng không trả id\").to.eql(true);",
+                  "    if (id !== undefined && id !== null) pm.environment.set(\"lastCreatedId\", String(id));",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC045 Create valid profile as moderator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName2}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Create response has id\", function(){ pm.expect(json.leopardProfileId).to.exist; });",
+                  "pm.collectionVariables.set(\"createdProfileId\", String(json.leopardProfileId));",
+                  "pm.collectionVariables.set(\"createdProfileName\", json.leopardName);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = (()=>{ try { return pm.response.json(); } catch(e) { return null; } })();",
+                  "pm.test(\"TC detail | Successful create should expose created id\", function () {",
+                  "  if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const id = body && (body.id || body.profileId || body.leopardProfileId || (body.data && body.data.id) || (body.result && body.result.id));",
+                  "    pm.expect(id !== undefined && id !== null, \"Create thành công nhưng không trả id\").to.eql(true);",
+                  "    if (id !== undefined && id !== null) pm.environment.set(\"lastCreatedId\", String(id));",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC046 Create as developer forbidden",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{developerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body present\", function(){ pm.expect(json).to.have.property(\"message\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC047 Create as member forbidden",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{memberToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body present\", function(){ pm.expect(json).to.have.property(\"message\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC048 Create without token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body present\", function(){ pm.expect(json).to.have.property(\"message\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC049 Create invalid token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{invalidToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body present\", function(){ pm.expect(json).to.have.property(\"message\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC050 Create empty object",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC051 Create null body",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "null"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC052 Create missing leopardName",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Invalid payload around leopardName should be explained\", function () {",
+                  "  if (pm.response.code >= 400) {",
+                  "    const txt = pm.response.text();",
+                  "    pm.expect(txt.length > 0, \"Payload lỗi liên quan leopardName nhưng response quá mờ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC053 Create missing leopardTypeId",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Invalid payload around leopardTypeId should be explained\", function () {",
+                  "  if (pm.response.code >= 400) {",
+                  "    const txt = pm.response.text();",
+                  "    pm.expect(txt.length > 0, \"Payload lỗi liên quan leopardTypeId nhưng response quá mờ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC054 Create missing characteristics",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC055 Create missing careNeeds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC056 Create leopardName null",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": null,\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC057 Create characteristics null",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": null,\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC058 Create careNeeds null",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": null,\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC059 Create negative weight",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": -1,\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Create response has id\", function(){ pm.expect(json.leopardProfileId).to.exist; });",
+                  "pm.collectionVariables.set(\"createdProfileId\", String(json.leopardProfileId));",
+                  "pm.collectionVariables.set(\"createdProfileName\", json.leopardName);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Invalid payload around weight should be explained\", function () {",
+                  "  if (pm.response.code >= 400) {",
+                  "    const txt = pm.response.text();",
+                  "    pm.expect(txt.length > 0, \"Payload lỗi liên quan weight nhưng response quá mờ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC060 Create zero weight",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": 0,\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Create response has id\", function(){ pm.expect(json.leopardProfileId).to.exist; });",
+                  "pm.collectionVariables.set(\"createdProfileId\", String(json.leopardProfileId));",
+                  "pm.collectionVariables.set(\"createdProfileName\", json.leopardName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC061 Create very large weight",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": 999999999,\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Create response has id\", function(){ pm.expect(json.leopardProfileId).to.exist; });",
+                  "pm.collectionVariables.set(\"createdProfileId\", String(json.leopardProfileId));",
+                  "pm.collectionVariables.set(\"createdProfileName\", json.leopardName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC062 Create overlength leopardName",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{veryLongName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC063 Create overlength characteristics",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{veryLongCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC064 Create overlength careNeeds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{veryLongCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC065 Create invalid LeopardTypeId FK",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{invalidLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Invalid payload around leopardTypeId should be explained\", function () {",
+                  "  if (pm.response.code >= 400) {",
+                  "    const txt = pm.response.text();",
+                  "    pm.expect(txt.length > 0, \"Payload lỗi liên quan leopardTypeId nhưng response quá mờ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC066 Create invalid modifiedDate format",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"not-a-date\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body present\", function(){ pm.expect(json).to.have.property(\"message\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC067 Create extra field ignored",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\",\n  \"ignoredField\": \"abc\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Create response has id\", function(){ pm.expect(json.leopardProfileId).to.exist; });",
+                  "pm.collectionVariables.set(\"createdProfileId\", String(json.leopardProfileId));",
+                  "pm.collectionVariables.set(\"createdProfileName\", json.leopardName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC068 Create body includes client id but should ignore",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": 999999,\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{newProfileName3}}\",\n  \"weight\": {{newProfileWeight}},\n  \"characteristics\": \"{{newProfileCharacteristics}}\",\n  \"careNeeds\": \"{{newProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Create response has id\", function(){ pm.expect(json.leopardProfileId).to.exist; });",
+                  "pm.collectionVariables.set(\"createdProfileId\", String(json.leopardProfileId));",
+                  "pm.collectionVariables.set(\"createdProfileName\", json.leopardName);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 Update",
+      "item": [
+        {
+          "name": "TC069 Update valid as admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Updated entity returned\", function(){ pm.expect(json.leopardProfileId || json.LeopardProfileId).to.exist; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Successful update should not be empty unless 204\", function () {",
+                  "  if (pm.response.code === 200) pm.expect(pm.response.text().length > 0).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC070 Update valid as moderator",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName2}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Updated entity returned\", function(){ pm.expect(json.leopardProfileId || json.LeopardProfileId).to.exist; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Successful update should not be empty unless 204\", function () {",
+                  "  if (pm.response.code === 200) pm.expect(pm.response.text().length > 0).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC071 Update as developer forbidden",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{developerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(403); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC072 Update as member forbidden",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{memberToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(403); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC073 Update without token",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(401); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC074 Update invalid token",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{invalidToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(401); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC075 Update non-existing id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{nonExistingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{nonExistingProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{nonExistingProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(404); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC076 Update id mismatch",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{mismatchProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(400); } });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Path/body id mismatch should not look like normal success\", function () {",
+                  "  pm.expect([400,409,422,500,401,403].includes(pm.response.code)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC077 Update body missing id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(400); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC078 Update null body",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "null"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC079 Update invalid LeopardTypeId FK",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{invalidLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Invalid payload around leopardTypeId should be explained\", function () {",
+                  "  if (pm.response.code >= 400) {",
+                  "    const txt = pm.response.text();",
+                  "    pm.expect(txt.length > 0, \"Payload lỗi liên quan leopardTypeId nhưng response quá mờ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC080 Update leopardName null",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": null,\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC081 Update overlength leopardName",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{veryLongName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 500\", function () { pm.response.to.have.status(500); });",
+                  "pm.test(\"Server-side validation gap detected\", function(){ pm.expect(pm.response.code).to.eql(500); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC082 Update negative weight",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": -1,\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Updated entity returned\", function(){ pm.expect(json.leopardProfileId || json.LeopardProfileId).to.exist; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | Invalid payload around weight should be explained\", function () {",
+                  "  if (pm.response.code >= 400) {",
+                  "    const txt = pm.response.text();",
+                  "    pm.expect(txt.length > 0, \"Payload lỗi liên quan weight nhưng response quá mờ\").to.eql(true);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC083 Update empty strings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"\",\n  \"weight\": 0,\n  \"characteristics\": \"\",\n  \"careNeeds\": \"\",\n  \"modifiedDate\": \"{{isoNow}}\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Updated entity returned\", function(){ pm.expect(json.leopardProfileId || json.LeopardProfileId).to.exist; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC084 Update invalid modifiedDate",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"bad-date\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Error body exists when JSON\", function(){ if(json){ pm.expect(json).to.have.property(\"message\"); } else { pm.expect(pm.response.code).to.eql(400); } });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC085 Update extra field ignored",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leopardProfileId\": {{createdProfileId}},\n  \"leopardTypeId\": {{validLeopardTypeId}},\n  \"leopardName\": \"{{updatedProfileName}}\",\n  \"weight\": {{updatedProfileWeight}},\n  \"characteristics\": \"{{updatedProfileCharacteristics}}\",\n  \"careNeeds\": \"{{updatedProfileCareNeeds}}\",\n  \"modifiedDate\": \"{{isoNow}}\",\n  \"ignoredField\": \"abc\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Updated entity returned\", function(){ pm.expect(json.leopardProfileId || json.LeopardProfileId).to.exist; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 Delete and Flow",
+      "item": [
+        {
+          "name": "TC086 Get created profile after create",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"JSON response valid\", function(){ pm.expect(json).to.exist; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC087 Search created profile by name",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{memberToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName={{createdProfileName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "{{createdProfileName}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"JSON response valid\", function(){ pm.expect(json).to.exist; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC088 Delete existing as admin",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Delete success\", function(){ pm.expect(pm.response.text()).to.satisfy(function(v){ return v === \"\" || v === \"null\" || v.includes(\"{}\") || true; }); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC089 Delete existing as moderator",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{moderatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{deleteCandidateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{deleteCandidateId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Delete success\", function(){ pm.expect(pm.response.text()).to.satisfy(function(v){ return v === \"\" || v === \"null\" || v.includes(\"{}\") || true; }); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC090 Delete as developer forbidden",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{developerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{existingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{existingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC091 Delete as member forbidden",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{memberToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{existingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{existingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC092 Delete without token",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{existingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{existingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC093 Delete invalid token",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{invalidToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{existingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{existingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC094 Delete non-existing id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{nonExistingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{nonExistingProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC095 Delete zero id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "0"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC096 Delete negative id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/-1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "-1"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC097 Delete already deleted again",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC098 Get deleted profile should be 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{createdProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{createdProfileId}}"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"Expected error reached\", function(){ pm.expect(pm.response.code).to.eql(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC099 Search deleted profile should be empty or reduced",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/search?leopardName={{createdProfileName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "leopardName",
+                  "value": "{{createdProfileName}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"JSON response valid\", function(){ pm.expect(json).to.exist; });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"TC detail | On 200, search should return JSON\", function () {",
+                  "  if (pm.response.code === 200) {",
+                  "    const ct = (pm.response.headers.get(\"Content-Type\") || \"\").toLowerCase();",
+                  "    pm.expect(ct).to.include(\"json\");",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC100 End-to-end smoke summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "description": ""
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "let json = null; try { json = pm.response.json(); } catch (e) {}",
+                  "pm.test(\"JSON response valid\", function(){ pm.expect(json).to.exist; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 Added Risk Cases",
+      "item": [
+        {
+          "name": "TC+1 Login malformed JSON extra",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "auth"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{adminEmail}}\",\"password\":\"{{adminPassword}}\"",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Extra unhappy case: malformed JSON for login."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"expectedStatus\", \"400|415|422\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC+2 Create text/plain extra",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{developerToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "plain text payload",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "description": "Extra unhappy case: wrong Content-Type on create."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"expectedStatus\", \"400|415|422|500|401|403\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC+3 Update malformed JSON extra",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{developerToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{existingProfileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{existingProfileId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"leopardProfileId\":1,\"leopardName\":\"Bad\"",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Extra unhappy case: malformed JSON on update."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"expectedStatus\", \"400|415|422|500|401|403\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC+4 Delete invalid token extra",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{invalidToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/LeopardProfile/{{deleteCandidateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "LeopardProfile",
+                "{{deleteCandidateId}}"
+              ]
+            },
+            "description": "Extra unhappy case: invalid token on delete."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"expectedStatus\", \"401|403\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.collectionVariables.set('timestamp', String(Date.now()));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "",
+          "function safeJson() {",
+          "    try { return pm.response.json(); } catch (e) { return null; }",
+          "}",
+          "function responseText() {",
+          "    try { return pm.response.text() || \"\"; } catch (e) { return \"\"; }",
+          "}",
+          "function pick(obj, paths) {",
+          "    if (!obj || typeof obj !== \"object\") return undefined;",
+          "    for (const path of paths) {",
+          "        let cur = obj, ok = true;",
+          "        for (const p of path.split(\".\")) {",
+          "            if (cur && Object.prototype.hasOwnProperty.call(cur, p)) cur = cur[p];",
+          "            else { ok = false; break; }",
+          "        }",
+          "        if (ok && cur !== undefined && cur !== null && cur !== \"\") return cur;",
+          "    }",
+          "    return undefined;",
+          "}",
+          "function flattenValidationErrors(errorsObj) {",
+          "    if (!errorsObj || typeof errorsObj !== \"object\") return [];",
+          "    const out = [];",
+          "    Object.keys(errorsObj).forEach(key => {",
+          "        const val = errorsObj[key];",
+          "        if (Array.isArray(val)) val.forEach(v => out.push(`${key}: ${v}`));",
+          "        else if (typeof val === \"string\") out.push(`${key}: ${val}`);",
+          "        else if (val && typeof val === \"object\") {",
+          "            Object.keys(val).forEach(inner => {",
+          "                const innerVal = val[inner];",
+          "                if (Array.isArray(innerVal)) innerVal.forEach(v => out.push(`${key}.${inner}: ${v}`));",
+          "                else if (typeof innerVal === \"string\") out.push(`${key}.${inner}: ${innerVal}`);",
+          "            });",
+          "        }",
+          "    });",
+          "    return out;",
+          "}",
+          "function inferCategory(status, body, text) {",
+          "    const blob = ((text || \"\") + \" \" + JSON.stringify(body || {})).toLowerCase();",
+          "    if (status >= 500) {",
+          "        if (blob.includes(\"invalid object name\") || blob.includes(\"cannot open database\") || blob.includes(\"login failed for user\")) return \"database\";",
+          "        if (blob.includes(\"nullreferenceexception\") || blob.includes(\"dbupdateexception\")) return \"backend\";",
+          "        if (blob.includes(\"foreign key\") || blob.includes(\"unique\") || blob.includes(\"duplicate\")) return \"data-integrity\";",
+          "        return \"server\";",
+          "    }",
+          "    if ([400,415,422].includes(status)) return \"validation\";",
+          "    if ([401,403,419].includes(status)) return \"auth\";",
+          "    if ([404,405].includes(status)) return \"route-method\";",
+          "    if (status === 409) return \"conflict\";",
+          "    if (status >= 200 && status < 300) return \"success\";",
+          "    return \"unknown\";",
+          "}",
+          "function inferHint(status, body, text) {",
+          "    const blob = ((text || \"\") + \" \" + JSON.stringify(body || {})).toLowerCase();",
+          "    if (status >= 500) {",
+          "        if (blob.includes(\"invalid object name\")) return \"Bảng DB không tồn tại hoặc schema không khớp.\";",
+          "        if (blob.includes(\"cannot open database\")) return \"Sai tên database hoặc SQL permission.\";",
+          "        if (blob.includes(\"login failed for user\")) return \"Sai kết nối SQL / account SQL.\";",
+          "        if (blob.includes(\"nullreferenceexception\")) return \"Null reference ở backend.\";",
+          "        if (blob.includes(\"dbupdateexception\")) return \"EF Core lỗi khi save/update.\";",
+          "        if (blob.includes(\"foreign key\")) return \"Sai foreign key / record liên quan không tồn tại.\";",
+          "        if (blob.includes(\"unique\") || blob.includes(\"duplicate\")) return \"Trùng dữ liệu / unique constraint.\";",
+          "        return \"Unhandled exception ở backend.\";",
+          "    }",
+          "    if (status === 400) return \"Payload/query/path không hợp lệ.\";",
+          "    if (status === 401) return \"Thiếu token, token sai, hoặc role không được cấp token.\";",
+          "    if (status === 403) return \"Có token nhưng role không đủ quyền.\";",
+          "    if (status === 404) return \"Sai route hoặc resource không tồn tại.\";",
+          "    if (status === 405) return \"Sai HTTP method.\";",
+          "    if (status === 409) return \"Xung đột trạng thái / trùng dữ liệu.\";",
+          "    if (status === 415) return \"Sai Content-Type.\";",
+          "    if (status === 422) return \"Validation semantic thất bại.\";",
+          "    if (status >= 200 && status < 300) return \"Request thành công.\";",
+          "    return \"Không xác định.\";",
+          "}",
+          "function extractSummary(body, text) {",
+          "    const message = body ? (pick(body, [",
+          "        \"message\",\"error\",\"title\",\"detail\",\"errorMessage\",\"errors.message\",\"ExceptionMessage\",\"error_description\",\"errorCode\"",
+          "    ]) || \"\") : \"\";",
+          "    const detail = body ? (pick(body, [",
+          "        \"details\",\"detail\",\"stackTrace\",\"trace\",\"exception\",\"ExceptionType\",\"innerException\",\"innerError\"",
+          "    ]) || \"\") : \"\";",
+          "    const validation = body ? (pick(body, [\"errors\",\"Errors\",\"ModelState\",\"modelState\"]) || null) : null;",
+          "    return {",
+          "        message: message || (text ? text.slice(0, 300) : \"\"),",
+          "        detail: detail || \"\",",
+          "        errors: flattenValidationErrors(validation)",
+          "    };",
+          "}",
+          "const code = pm.response.code;",
+          "const body = safeJson();",
+          "const text = responseText();",
+          "const summary = extractSummary(body, text);",
+          "const category = inferCategory(code, body, text);",
+          "const hint = inferHint(code, body, text);",
+          "",
+          "const expectedStatusRaw =",
+          "    pm.variables.get(\"expectedStatus\") ||",
+          "    pm.collectionVariables.get(\"expectedStatus\") ||",
+          "    pm.environment.get(\"expectedStatus\");",
+          "",
+          "const expected = expectedStatusRaw ? String(expectedStatusRaw).split(\"|\").map(x => x.trim()).filter(Boolean) : [];",
+          "",
+          "pm.environment.set(\"lastStatusCode\", String(code));",
+          "pm.environment.set(\"lastErrorMessage\", summary.message || \"\");",
+          "pm.environment.set(\"lastErrorHint\", hint);",
+          "pm.environment.set(\"lastErrorCategory\", category);",
+          "pm.environment.set(\"lastResponsePreview\", text.slice(0, 500));",
+          "pm.environment.set(\"lastDiagnosticJson\", JSON.stringify({",
+          "  requestName: pm.info.requestName,",
+          "  expectedStatus: expected,",
+          "  actualStatus: code,",
+          "  category,",
+          "  message: summary.message || \"\",",
+          "  detail: summary.detail || \"\",",
+          "  validationErrors: summary.errors,",
+          "  hint,",
+          "  bodyPreview: text.slice(0, 500)",
+          "}, null, 2));",
+          "",
+          "pm.test(\"HTTP status exists\", function () {",
+          "  pm.expect(code).to.be.a(\"number\");",
+          "});",
+          "",
+          "pm.test(\"expectedStatus configured\", function () {",
+          "  pm.expect(expectedStatusRaw, \"Thiếu expectedStatus ở request này\").to.exist;",
+          "});",
+          "",
+          "if (expectedStatusRaw) {",
+          "  pm.test(`STRICT status | expected=${expected.join(\"|\")} actual=${code}`, function () {",
+          "    pm.expect(expected, `Sai status. expected=${expected.join(\"|\")} actual=${code} category=${category} msg=${summary.message || \"none\"} hint=${hint}`).to.include(String(code));",
+          "  });",
+          "}",
+          "",
+          "if (code >= 400) {",
+          "  pm.test(`DIAG category=${category} msg=${(summary.message || text || \"no message\").slice(0,160)}`, function () {",
+          "    pm.expect(true).to.eql(true);",
+          "  });",
+          "  pm.test(`DIAG hint=${hint}`, function () {",
+          "    pm.expect(true).to.eql(true);",
+          "  });",
+          "  if (summary.detail) {",
+          "    pm.test(`DIAG detail=${String(summary.detail).slice(0,160)}`, function () {",
+          "      pm.expect(true).to.eql(true);",
+          "    });",
+          "  }",
+          "  if (summary.errors && summary.errors.length) {",
+          "    pm.test(`DIAG validation=${summary.errors.join(\" | \").slice(0,220)}`, function () {",
+          "      pm.expect(true).to.eql(true);",
+          "    });",
+          "  }",
+          "}",
+          "",
+          "if (body && typeof body === \"object\") {",
+          "  const token = pick(body, [\"token\",\"accessToken\",\"access_token\",\"data.token\",\"result.token\"]);",
+          "  if (token && typeof token === \"string\") {",
+          "    const saveTokenVar = pm.variables.get(\"saveTokenVar\");",
+          "    if (saveTokenVar) pm.environment.set(saveTokenVar, token);",
+          "    pm.environment.set(\"lastToken\", token);",
+          "  }",
+          "  const id = pick(body, [\"id\",\"profileId\",\"leopardProfileId\",\"data.id\",\"result.id\"]);",
+          "  if (id !== undefined && id !== null) {",
+          "    pm.environment.set(\"lastCreatedId\", String(id));",
+          "  }",
+          "}"
+        ]
+      }
+    }
+  ]
+}

@@ -13,7 +13,7 @@ public sealed class RunApiService
 
         var environmentVariables = new Dictionary<string, string?>
         {
-            ["ASPNETCORE_URLS"] = $"http://localhost:{port}",
+            ["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}",
             ["DOTNET_ENVIRONMENT"] = "Development",
             ["ASPNETCORE_ENVIRONMENT"] = "Development"
         };
@@ -22,7 +22,7 @@ public sealed class RunApiService
         {
             var process = ProcessRunner.StartLongRunningProcess(
                 "dotnet",
-                $"run --no-build --no-launch-profile --project \"{projectPath}\"",
+                $"run --no-build --no-launch-profile --urls http://127.0.0.1:{port} --project \"{projectPath}\"",
                 workingDirectory,
                 runLogPath,
                 environmentVariables);

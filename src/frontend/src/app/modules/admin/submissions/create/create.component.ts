@@ -7,6 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterModule, Router } from '@angular/router';
+import { ExamsService } from '../../../../services/exams.service';
+import { SubmissionsService } from '../../../../services/submissions.service';
+import { ExamDto } from '../../../../api/models';
 
 @Component({
     selector: 'app-submissions-create',
@@ -29,26 +32,30 @@ export class CreateComponent {
     isDragging = false;
     currentDate = new Date().toLocaleString();
     
-    @ViewChild('fileInput') fileInput!: ElementRef;
+    exams: ExamDto[] = [];
 
-    exams = [
-        { id: 'EXM-101', name: 'Midterm PRN232 - Spring 2026' },
-        { id: 'EXM-102', name: 'Final PRN232 - Spring 2026' }
-    ];
+    @ViewChild('projectFileInput') projectFileInput!: ElementRef;
 
     constructor(
         private fb: FormBuilder,
-        private router: Router
+        private router: Router,
+        private examsService: ExamsService,
+        private submissionsService: SubmissionsService
     ) {
         this.submissionForm = this.fb.group({
-            studentId: ['', [Validators.required]],
+            studentName: ['', [Validators.required]],
+            studentCode: ['', [Validators.required]],
             examId: ['', [Validators.required]]
         });
 
-        // Update current date every minute
-        setInterval(() => {
-            this.currentDate = new Date().toLocaleString();
-        }, 60000);
+        this.loadExams();
+    }
+
+    loadExams(): void {
+        this.examsService.getExams({ pageSize: 100 }).subscribe({
+            next: (res) => this.exams = res.items || [],
+            error: (err) => console.error('Failed to load exams', err)
+        });
     }
 
     onDragOver(event: DragEvent): void {
@@ -95,8 +102,8 @@ export class CreateComponent {
 
     removeFile(): void {
         this.selectedFile = null;
-        if (this.fileInput) {
-            this.fileInput.nativeElement.value = '';
+        if (this.projectFileInput) {
+            this.projectFileInput.nativeElement.value = '';
         }
     }
 
@@ -106,14 +113,18 @@ export class CreateComponent {
 
     onSubmit(): void {
         if (this.submissionForm.valid && this.selectedFile) {
-            console.log('Form Data:', this.submissionForm.value);
-            console.log('File:', this.selectedFile);
-            console.log('Submitted At:', new Date().toISOString());
-            
-            // Navigate back to dashboard after submit (simulated)
-            setTimeout(() => {
-                this.router.navigate(['/submissions', 'dashboard']);
-            }, 500);
+            const val = this.submissionForm.value;
+            this.submissionsService.createSubmission({
+                examId: val.examId,
+                body: {
+                    StudentName: val.studentName,
+                    StudentCode: val.studentCode,
+                    File: this.selectedFile
+                }
+            }).subscribe({
+                next: () => this.router.navigate(['/submissions', 'dashboard']),
+                error: (err) => console.error('Submission failed', err)
+            });
         } else {
             this.submissionForm.markAllAsTouched();
             if (!this.selectedFile) {
@@ -122,3 +133,4 @@ export class CreateComponent {
         }
     }
 }
+

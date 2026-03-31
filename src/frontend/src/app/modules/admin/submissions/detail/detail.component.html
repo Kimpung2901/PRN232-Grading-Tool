@@ -1,4 +1,4 @@
-<div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent" *ngIf="detail">
+<div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent" *ngIf="submission">
     <!-- ─── BREADCRUMB HEADER ─────────────────────────────────────────── -->
     <div class="flex items-center justify-between border-b bg-white px-8 py-4 text-sm dark:bg-card">
         <span class="font-semibold text-gray-800 dark:text-white">Submission Detail</span>
@@ -7,7 +7,7 @@
             <span>•</span>
             <a class="cursor-pointer hover:text-primary" [routerLink]="['/submissions', 'dashboard']">Submissions</a>
             <span>•</span>
-            <span class="font-semibold text-primary">{{ detail.id }}</span>
+            <span class="font-semibold text-primary">{{ submission.id }}</span>
         </div>
     </div>
 
@@ -16,16 +16,16 @@
         <div class="flex items-start justify-between">
             <div class="flex items-center gap-4">
                 <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-100 text-2xl font-bold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400">
-                    {{ detail.studentName.charAt(0) }}
+                    {{ studentName.charAt(0) }}
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-                        {{ detail.studentName }}
+                        {{ studentName }}
                     </h1>
                     <div class="mt-1 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-                        <span class="font-medium text-gray-700 dark:text-gray-300">{{ detail.studentId }}</span>
+                        <span class="font-medium text-gray-700 dark:text-gray-300">{{ studentCode }}</span>
                         <span>•</span>
-                        <span>{{ detail.examName }}</span>
+                        <span>{{ examName }}</span>
                     </div>
                 </div>
             </div>
@@ -34,16 +34,16 @@
                 <span
                     class="rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider shadow-sm"
                     [ngClass]="{
-                        'bg-emerald-100 text-emerald-700 border-emerald-200': detail.status === 'Graded',
-                        'bg-blue-100 text-blue-700 border-blue-200': detail.status === 'Grading',
-                        'bg-orange-100 text-orange-700 border-orange-200': detail.status === 'Pending',
-                        'bg-red-100 text-red-700 border-red-200': detail.status === 'Error'
+                        'bg-emerald-100 text-emerald-700 border-emerald-200': submission.status === 3,
+                        'bg-blue-100 text-blue-700 border-blue-200': submission.status === 2,
+                        'bg-orange-100 text-orange-700 border-orange-200': submission.status === 1,
+                        'bg-red-100 text-red-700 border-red-200': submission.status === 4
                     }"
                 >
-                    {{ detail.status }}
+                    {{ statusText }}
                 </span>
-                <div *ngIf="detail.score !== null" class="text-xl font-bold text-gray-900 dark:text-white mt-1">
-                    Score: <span class="text-emerald-600 dark:text-emerald-400">{{ detail.score | number:'1.1-2' }}</span>
+                <div *ngIf="submission.status === 3" class="text-xl font-bold text-gray-900 dark:text-white mt-1">
+                    Graded
                 </div>
             </div>
         </div>
@@ -71,7 +71,7 @@
                     Data Files
                 </button>
                 <button
-                    [routerLink]="['/submissions', detail.id, 'grading']"
+                    [routerLink]="['/submissions', submission.id, 'grading']"
                     class="whitespace-nowrap border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors dark:text-gray-400 dark:hover:text-gray-300"
                 >
                     Grading Results
@@ -84,8 +84,8 @@
     <div class="mx-8 my-6 grid grid-cols-1 gap-6 lg:grid-cols-3" *ngIf="activeTab === 'overview'">
         <!-- LEFT COLUMN -->
         <div class="space-y-6 lg:col-span-2">
-            <!-- Last Error Alert -->
-            <div *ngIf="detail.lastError && detail.status === 'Error'" class="rounded-2xl bg-red-50 border border-red-200 p-5 dark:bg-red-900/10 dark:border-red-900/50">
+            <!-- Last Error Alert (Simplified) -->
+            <div *ngIf="submission.status === 4" class="rounded-2xl bg-red-50 border border-red-200 p-5 dark:bg-red-900/10 dark:border-red-900/50">
                 <div class="flex items-start">
                     <div class="flex-shrink-0">
                         <svg class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,10 +93,10 @@
                         </svg>
                     </div>
                     <div class="ml-3">
-                        <h3 class="font-bold text-red-800 dark:text-red-400">Pipeline Error</h3>
-                        <div class="mt-2 text-sm text-red-700 dark:text-red-300 font-mono bg-red-100/50 p-3 rounded-lg dark:bg-red-900/20 break-all overflow-hidden border border-red-200/50 dark:border-red-800/30">
-                            {{ detail.lastError }}
-                        </div>
+                        <h3 class="font-bold text-red-800 dark:text-red-400">Submission Error</h3>
+                        <p class="mt-2 text-sm text-red-700 dark:text-red-300">
+                            There was an error processing this submission. Please check the logs or try re-grading.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -120,8 +120,8 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-900 dark:text-white">{{ detail.fileName }}</p>
-                            <p class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{{ detail.fileSize }} • Uploaded via {{ detail.source }}</p>
+                            <p class="font-medium text-gray-900 dark:text-white">{{ fileName }}</p>
+                            <p class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">Uploaded via Manual Submission</p>
                         </div>
                     </div>
                     <button 
@@ -138,7 +138,7 @@
             
             <!-- Quick Actions -->
             <div class="grid grid-cols-2 gap-4">
-                <button [routerLink]="['/submissions', detail.id, 'grading']" class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-2xl bg-white hover:bg-indigo-50 hover:border-indigo-200 transition group dark:bg-card dark:border-gray-800 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-800">
+                <button [routerLink]="['/submissions', submission.id, 'grading']" class="flex flex-col items-center justify-center p-6 border border-gray-200 rounded-2xl bg-white hover:bg-indigo-50 hover:border-indigo-200 transition group dark:bg-card dark:border-gray-800 dark:hover:bg-indigo-900/20 dark:hover:border-indigo-800">
                     <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform dark:bg-indigo-900/40 dark:text-indigo-400">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -178,8 +178,8 @@
                     </div>
                     <div class="border-t border-gray-100 dark:border-gray-800"></div>
                     <div>
-                        <span class="block text-xs text-gray-500 dark:text-gray-400">Exam ID</span>
-                        <a [routerLink]="['/exams', 'detail', 'EXM-101']" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400 mt-0.5 block">{{ detail.examName }}</a>
+                        <span class="block text-xs text-gray-500 dark:text-gray-400">Exam</span>
+                        <a [routerLink]="['/exams', 'detail', submission.examId]" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400 mt-0.5 block">{{ examName }}</a>
                     </div>
                 </div>
             </div>

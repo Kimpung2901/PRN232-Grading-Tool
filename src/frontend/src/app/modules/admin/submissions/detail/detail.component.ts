@@ -1,20 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-
-interface SubmissionDetail {
-    id: string;
-    studentName: string;
-    studentId: string;
-    examName: string;
-    fileName: string;
-    fileSize: string;
-    submittedAt: string;
-    source: 'Manual' | 'Student Portal';
-    status: 'Pending' | 'Grading' | 'Graded' | 'Error';
-    score: number | null;
-    lastError: string | null;
-}
+import { SubmissionsService } from '../../../../services/submissions.service';
+import { ExamsService } from '../../../../services/exams.service';
+import { SubmissionDto, ExamDto } from '../../../../api/models';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'app-submissions-detail',
@@ -23,30 +13,69 @@ interface SubmissionDetail {
     templateUrl: './detail.component.html'
 })
 export class DetailComponent {
-    id = '';
-    activeTab = 'overview'; // overview, data, grading
-    detail: SubmissionDetail | null = null;
+    submissionId: number;
+    activeTab = 'overview'; 
+    submission: SubmissionDto | null = null;
+    exam: ExamDto | null = null;
     
-    constructor(private route: ActivatedRoute) {
-        this.id = this.route.snapshot.paramMap.get('id') ?? 'SUB-1001';
+    constructor(
+        private route: ActivatedRoute,
+        private submissionsService: SubmissionsService,
+        private examsService: ExamsService
+    ) {
+        const idParam = this.route.snapshot.paramMap.get('id');
+        this.submissionId = idParam ? parseInt(idParam, 10) : 0;
         
-        // Mock data
-        this.detail = {
-            id: this.id,
-            studentName: 'Nguyen Van A',
-            studentId: 'SE15001',
-            examName: 'Midterm PRN232 - Spring 2026',
-            fileName: 'SE15001_Midterm.zip',
-            fileSize: '4.2 MB',
-            submittedAt: 'Mar 17, 2026 09:15',
-            source: 'Student Portal',
-            status: 'Error',
-            score: null,
-            lastError: 'Build failed: Cannot find module "express". Ensure all dependencies are included in package.json and node_modules is not required.'
-        };
+        if (this.submissionId) {
+            this.loadData();
+        }
+    }
+
+    loadData(): void {
+        this.submissionsService.getSubmissionById({ id: this.submissionId }).subscribe({
+            next: (submission) => {
+                this.submission = submission;
+                if (submission.examId) {
+                    this.examsService.getExamById({ examId: submission.examId }).subscribe({
+                        next: (exam) => this.exam = exam,
+                        error: (err) => console.error('Failed to load exam', err)
+                    });
+                }
+            },
+            error: (err) => console.error('Failed to load submission', err)
+        });
+    }
+
+    get studentName(): string {
+        return this.submission?.studentName || 'Unknown Student';
+    }
+
+    get studentCode(): string {
+        return this.submission?.studentCode || 'N/A';
+    }
+
+    get examName(): string {
+        return this.exam?.examName || 'Loading...';
+    }
+
+    get statusText(): string {
+        const s = this.submission?.status;
+        switch(s) {
+            case 1: return 'Pending';
+            case 2: return 'Grading';
+            case 3: return 'Graded';
+            case 4: return 'Error';
+            default: return 'Unknown';
+        }
+    }
+
+    get fileName(): string {
+        if (!this.submission?.filePath) return 'No file';
+        const parts = this.submission.filePath.split(/[\\/]/);
+        return parts[parts.length - 1];
     }
 
     downloadSource(): void {
-        console.log('Downloading file:', this.detail?.fileName);
+        console.log('Downloading file:', this.submission?.filePath);
     }
 }

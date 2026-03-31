@@ -5,6 +5,8 @@ export type { ExamDto } from './models/exam-dto';
 export type { ExamDtoPagedResult } from './models/exam-dto-paged-result';
 export type { SubmissionDto } from './models/submission-dto';
 export type { SubmissionDtoPagedResult } from './models/submission-dto-paged-result';
+export type { SubmissionReportDto } from './models/submission-report-dto';
+export type { SubmissionTestResultDto } from './models/submission-test-result-dto';
 export type { TestCaseDto } from './models/test-case-dto';
 export type { TestCaseDtoPagedResult } from './models/test-case-dto-paged-result';
 export type { TestResultRequest } from './models/test-result-request';

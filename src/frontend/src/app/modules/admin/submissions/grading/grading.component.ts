@@ -24,36 +24,7 @@ export class GradingComponent {
     selectedLog: string | null = null;
     isLogOpen = false;
     
-    results: GradingResult[] = [
-        {
-            id: 'r1',
-            testCaseName: 'Login Success',
-            status: 'Passed',
-            point: 1.5,
-            log: 'Request successful. Status code 200. Token received.'
-        },
-        {
-            id: 'r2',
-            testCaseName: 'Get User Profile',
-            status: 'Passed',
-            point: 1.0,
-            log: 'Request successful. Status code 200. Profile match.'
-        },
-        {
-            id: 'r3',
-            testCaseName: 'Create Item',
-            status: 'Failed',
-            point: 0.0,
-            log: 'AssertionError: expected status code 201 but got 400. \nResponse: {\n  "error": "Validation failed"\n}'
-        },
-        {
-            id: 'r4',
-            testCaseName: 'Get Item',
-            status: 'Skipped',
-            point: 0.0,
-            log: 'Skipped due to dependency failure (Create Item).'
-        }
-    ];
+    results: GradingResult[] = [];
 
     constructor(private route: ActivatedRoute) {
         this.submissionId = this.route.snapshot.paramMap.get('id') ?? 'SUB-1001';

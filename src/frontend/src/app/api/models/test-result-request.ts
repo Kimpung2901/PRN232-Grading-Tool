@@ -6,4 +6,5 @@ export interface TestResultRequest {
   score?: number;
   status?: string | null;
   studentName?: string | null;
+  submissionId?: number | null;
 }

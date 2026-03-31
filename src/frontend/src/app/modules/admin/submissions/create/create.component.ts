@@ -115,7 +115,7 @@ export class CreateComponent {
         if (this.submissionForm.valid && this.selectedFile) {
             const val = this.submissionForm.value;
             this.submissionsService.createSubmission({
-                examId: val.examId,
+                examId: parseInt(val.examId, 10),
                 body: {
                     StudentName: val.studentName,
                     StudentCode: val.studentCode,

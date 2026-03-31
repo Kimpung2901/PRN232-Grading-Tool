@@ -33,18 +33,13 @@ public sealed class GradingPipeline
         Directory.CreateDirectory(collectionsRoot);
         Directory.CreateDirectory(reportsRoot);
 
-        await LogBatchAsync($"Runner root: {runnerRoot}", cancellationToken);
-        await LogBatchAsync("Preparing grading batch.", cancellationToken);
-
         var batchResultPath = Path.Combine(reportsRoot, "result.json");
         var batchOutput = new BatchPipelineOutput();
 
         try
         {
             var probeLogPath = Path.Combine(reportsRoot, "newman.setup.log");
-            await LogBatchAsync("Resolving Newman CLI.", cancellationToken);
             var newmanCommand = await _environmentSetupService.EnsureNewmanInstalledAsync(runnerRoot, probeLogPath, cancellationToken);
-            await LogBatchAsync($"Newman CLI ready: {newmanCommand}", cancellationToken);
 
             var databaseRoot = Path.Combine(runnerRoot, "database");
             var seedScript = DatabaseSetupService.FindSeedScript(databaseRoot);
@@ -52,65 +47,39 @@ public sealed class GradingPipeline
             if (seedScript is not null && runnerConnStr is not null)
             {
                 var dbLogPath = Path.Combine(reportsRoot, "db.log");
-                await LogBatchAsync($"Seeding database from {Path.GetFileName(seedScript)}.", cancellationToken);
                 await _databaseSetupService.SeedAsync(runnerConnStr, seedScript, dbLogPath, cancellationToken);
-                await LogBatchAsync("Database seed completed.", cancellationToken);
             }
-            else
-            {
-                await LogBatchAsync("Skipping database seed because config.json or .sql seed script was not found.", cancellationToken);
-            }
-
             var collectionPath = ResolveSingleFile(collectionsRoot, "*.postman_collection.json", "Postman collection");
             var submissionZipPaths = Directory.GetFiles(submissionsRoot, "*.zip", SearchOption.TopDirectoryOnly)
                 .OrderBy(Path.GetFileName)
                 .ToList();
-
-            await LogBatchAsync($"Using collection: {Path.GetFileName(collectionPath)}", cancellationToken);
-            await LogBatchAsync($"Found {submissionZipPaths.Count} submission(s) to grade.", cancellationToken);
 
             if (submissionZipPaths.Count == 0)
             {
                 throw new PipelineException("TEST_RUN_FAILED", $"Could not find submission zip in {submissionsRoot}.");
             }
 
-            await LogBatchAsync("Starting grading tasks sequentially.", cancellationToken);
-
-            for (var index = 0; index < submissionZipPaths.Count; index++)
-            {
-                var zipPath = submissionZipPaths[index];
-                var submissionName = Path.GetFileNameWithoutExtension(zipPath);
-                await LogBatchAsync($"[{index + 1}/{submissionZipPaths.Count}] Grading {submissionName}.", cancellationToken);
-
-                var submissionResult = await GradeSingleSubmissionAsync(
+            var gradingTasks = submissionZipPaths
+                .Select((zipPath, index) => GradeSingleSubmissionAsync(
                     runnerRoot,
                     workspaceRoot,
                     reportsRoot,
                     zipPath,
                     collectionPath,
                     newmanCommand,
-                    DefaultApiPort,
-                    cancellationToken);
+                    DefaultApiPort + index,
+                    cancellationToken));
 
-                batchOutput.Submissions.Add(submissionResult);
-                RecalculateBatchTotals(batchOutput);
-                batchOutput.Status = batchOutput.FailedSubmissions > 0 ? "completed_with_failures" : "running";
+            var submissionResults = await Task.WhenAll(gradingTasks);
+            batchOutput.Submissions.AddRange(submissionResults);
 
-                await LogBatchAsync($"Deleting graded submission artifact: {Path.GetFileName(zipPath)}", cancellationToken);
-                await _cleanupService.DeleteSubmissionArtifactAsync(zipPath, cancellationToken);
-                await LogBatchAsync($"Deleted graded submission artifact: {Path.GetFileName(zipPath)}", cancellationToken);
-
-                await WriteBatchResultFileAsync(batchOutput, batchResultPath, cancellationToken);
-                await LogBatchAsync($"[{index + 1}/{submissionZipPaths.Count}] Finished {submissionName} with status={submissionResult.Status}.", cancellationToken);
-            }
-
-            RecalculateBatchTotals(batchOutput);
+            batchOutput.TotalSubmissions = batchOutput.Submissions.Count;
+            batchOutput.CompletedSubmissions = batchOutput.Submissions.Count(x => x.BuildSucceeded && x.ApiStarted && x.TestRunCompleted);
+            batchOutput.FailedSubmissions = batchOutput.Submissions.Count(x => x.Status == "failed");
             batchOutput.Status = batchOutput.FailedSubmissions > 0 ? "completed_with_failures" : "completed";
-            await LogBatchAsync($"Batch finished with status={batchOutput.Status}.", cancellationToken);
         }
         catch (PipelineException ex)
         {
-            await LogBatchAsync($"Batch failed with pipeline error {ex.ErrorCode}: {ex.Message}", cancellationToken);
             batchOutput.Status = "failed";
             batchOutput.Submissions.Add(new PipelineConsoleOutput
             {
@@ -123,7 +92,6 @@ public sealed class GradingPipeline
         }
         catch (Exception ex)
         {
-            await LogBatchAsync($"Batch failed with unexpected error: {ex.Message}", cancellationToken);
             batchOutput.Status = "failed";
             batchOutput.Submissions.Add(new PipelineConsoleOutput
             {
@@ -135,7 +103,6 @@ public sealed class GradingPipeline
             batchOutput.FailedSubmissions = batchOutput.Submissions.Count;
         }
 
-        await LogBatchAsync($"Writing batch result file: {batchResultPath}", cancellationToken);
         await WriteBatchResultFileAsync(batchOutput, batchResultPath, cancellationToken);
         await WriteBatchSummaryAsync(batchOutput, cancellationToken);
     }
@@ -316,23 +283,6 @@ public sealed class GradingPipeline
         await Console.Out.WriteLineAsync(lines.ToString().AsMemory(), cancellationToken);
     }
 
-    private static void RecalculateBatchTotals(BatchPipelineOutput batchOutput)
-    {
-        batchOutput.TotalSubmissions = batchOutput.Submissions.Count;
-        batchOutput.CompletedSubmissions = batchOutput.Submissions.Count(x => x.BuildSucceeded && x.ApiStarted && x.TestRunCompleted);
-        batchOutput.FailedSubmissions = batchOutput.Submissions.Count(x => x.Status == "failed");
-    }
-
-    private static Task LogBatchAsync(string message, CancellationToken cancellationToken = default)
-    {
-        return Console.Out.WriteLineAsync($"[Batch] {message}".AsMemory(), cancellationToken);
-    }
-
-    private static Task LogSubmissionAsync(string submissionName, string step, string message, CancellationToken cancellationToken = default)
-    {
-        return Console.Out.WriteLineAsync($"[Submission:{submissionName}] [{step}] {message}".AsMemory(), cancellationToken);
-    }
-
     private static async Task WriteResultFileAsync(PipelineConsoleOutput output, string resultJsonPath, CancellationToken cancellationToken)
     {
         await File.WriteAllTextAsync(resultJsonPath, SerializeOutput(output), cancellationToken);
@@ -421,13 +371,7 @@ public sealed class GradingPipeline
 
         try
         {
-            await LogSubmissionAsync(submissionName, "START", "Preparing report files and workspace.", cancellationToken);
-
-            await LogSubmissionAsync(submissionName, "UNZIP", $"Extracting archive {Path.GetFileName(submissionZipPath)}.", cancellationToken);
             extractedWorkspace = await _unzipService.ExtractAsync(submissionZipPath, workspaceRoot, cancellationToken);
-            await LogSubmissionAsync(submissionName, "UNZIP", $"Extracted to {extractedWorkspace}.", cancellationToken);
-
-            await LogSubmissionAsync(submissionName, "DISCOVER", "Searching for solution and startup project.", cancellationToken);
             var solutionPath = SolutionParser.FindSolutionFile(extractedWorkspace);
             var solutionProjects = SolutionParser.ExtractProjects(solutionPath);
 
@@ -436,20 +380,10 @@ public sealed class GradingPipeline
                 ? ResolveStartupProject(solutionProjects, startupGuid)
                 : FindBestProject(solutionProjects.Select(p => p.Path).ToList());
 
-            await LogSubmissionAsync(
-                submissionName,
-                "DISCOVER",
-                $"Selected project {Path.GetFileName(projectPath)} from solution {Path.GetFileName(solutionPath)}.",
-                cancellationToken);
-
-            await LogSubmissionAsync(submissionName, "BUILD", "Starting dotnet build.", cancellationToken);
             output.BuildLog = await _buildService.BuildAsync(solutionPath, buildLogPath, cancellationToken);
             output.BuildSucceeded = true;
-            await LogSubmissionAsync(submissionName, "BUILD", "Build completed successfully.", cancellationToken);
 
-            await LogSubmissionAsync(submissionName, "API", $"Starting API on port {apiPort}.", cancellationToken);
             apiProcess = await _runApiService.StartAsync(projectPath, apiPort, runLogPath, cancellationToken);
-            await LogSubmissionAsync(submissionName, "API", $"API process started with PID {apiProcess.Id}.", cancellationToken);
             await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
 
             if (apiProcess.HasExited)
@@ -457,38 +391,23 @@ public sealed class GradingPipeline
                 throw new PipelineException("API_START_FAILED", "API process exited before health check completed.");
             }
 
-            await LogSubmissionAsync(submissionName, "HEALTH", "Waiting for API health check.", cancellationToken);
             await _healthCheckService.EnsureApiReadyAsync(apiPort, cancellationToken);
             output.ApiStarted = true;
-            await LogSubmissionAsync(submissionName, "HEALTH", "API is reachable.", cancellationToken);
 
-            await LogSubmissionAsync(submissionName, "NEWMAN", "Running Postman/Newman test collection.", cancellationToken);
             var newmanResult = await _newmanService.RunAsync(newmanCommand, collectionPath, reportJsonPath, newmanLogPath, apiPort, cancellationToken);
             output.NewmanLog = newmanResult.LogContent;
             output.TestRunCompleted = true;
-            await LogSubmissionAsync(submissionName, "NEWMAN", $"Newman finished with exit code {newmanResult.ExitCode}.", cancellationToken);
 
-            await LogSubmissionAsync(submissionName, "REPORT", "Parsing Newman report.", cancellationToken);
             output.Results = await _reportParser.ParseAsync(reportJsonPath, cancellationToken);
             output.Summary = ResultSummaryFactory.Create(output.Results);
             output.HasFailedAssertions = output.Summary.AssertionsFailed > 0;
             output.RunLog = await SafeReadFileAsync(runLogPath, cancellationToken);
             output.Status = output.HasFailedAssertions ? "completed_with_failures" : "completed";
-            await LogSubmissionAsync(
-                submissionName,
-                "REPORT",
-                $"Summary: passed={output.Summary.AssertionsPassed}/{output.Summary.AssertionsTotal}, failed={output.Summary.AssertionsFailed}, score={output.Summary.ScorePercent:F2}%.",
-                cancellationToken);
 
             if (newmanResult.ExitCode != 0)
             {
                 output.Error = "TEST_RUN_FAILED";
                 output.ErrorMessage = "Newman completed with failed assertions.";
-                await LogSubmissionAsync(submissionName, "DONE", "Completed with failed assertions.", cancellationToken);
-            }
-            else
-            {
-                await LogSubmissionAsync(submissionName, "DONE", "Completed successfully.", cancellationToken);
             }
         }
         catch (PipelineException ex)
@@ -502,7 +421,6 @@ public sealed class GradingPipeline
             output.Results = await TryParseResultsAsync(reportJsonPath, cancellationToken);
             output.Summary = ResultSummaryFactory.Create(output.Results);
             output.HasFailedAssertions = output.Summary.AssertionsFailed > 0;
-            await LogSubmissionAsync(submissionName, "ERROR", $"{ex.ErrorCode}: {ex.Message}", cancellationToken);
         }
         catch (Exception ex)
         {
@@ -515,11 +433,9 @@ public sealed class GradingPipeline
             output.Results = await TryParseResultsAsync(reportJsonPath, cancellationToken);
             output.Summary = ResultSummaryFactory.Create(output.Results);
             output.HasFailedAssertions = output.Summary.AssertionsFailed > 0;
-            await LogSubmissionAsync(submissionName, "ERROR", $"Unexpected failure: {ex.Message}", cancellationToken);
         }
         finally
         {
-            await LogSubmissionAsync(submissionName, "CLEANUP", "Stopping API process.", CancellationToken.None);
             await StopApiProcessAsync(apiProcess);
             await Task.Delay(500, CancellationToken.None); // allow OS to release file locks after process kill
 
@@ -527,13 +443,10 @@ public sealed class GradingPipeline
             {
                 try
                 {
-                    await LogSubmissionAsync(submissionName, "CLEANUP", "Deleting extracted workspace.", CancellationToken.None);
                     await _cleanupService.DeleteWorkspaceAsync(extractedWorkspace, cancellationToken);
-                    await LogSubmissionAsync(submissionName, "CLEANUP", "Workspace deleted.", CancellationToken.None);
                 }
                 catch
                 {
-                    await LogSubmissionAsync(submissionName, "CLEANUP", "Workspace cleanup failed and was ignored.", CancellationToken.None);
                     // cleanup failure must not affect grading results or other submissions
                 }
             }
@@ -542,9 +455,7 @@ public sealed class GradingPipeline
         stopwatch.Stop();
         output.ElapsedSeconds = stopwatch.Elapsed.TotalSeconds;
 
-        await LogSubmissionAsync(submissionName, "RESULT", $"Writing result file after {output.ElapsedSeconds:F1}s.", cancellationToken);
         await WriteResultFileAsync(output, resultJsonPath, cancellationToken);
-        await LogSubmissionAsync(submissionName, "RESULT", "Posting test result to grading API.", cancellationToken);
         await PostTestResultAsync(output, resultJsonPath, cancellationToken);
         return output;
     }

@@ -1,0 +1,1289 @@
+{
+    "info": {
+        "name": "EVDMS Vehicles API Tests",
+        "description": "Complete test suite for Vehicle API endpoints with JSON schema validation",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5000"
+        },
+        {
+            "key": "vehicleId",
+            "value": ""
+        },
+        {
+            "key": "notExistGuid",
+            "value": "99999999-9999-9999-9999-999999999999"
+        },
+        {
+            "key": "invalidGuid",
+            "value": "not-a-valid-guid"
+        }
+    ],
+    "item": [
+        {
+            "name": "1. CREATE",
+            "item": [
+                {
+                    "name": "Create Vehicle - Success",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"modelName\": \"Camry\",\n  \"brand\": \"Toyota\",\n  \"vehicleType\": \"Sedan\",\n  \"description\": \"A reliable sedan\",\n  \"releaseYear\": 2024,\n  \"createdBy\": \"admin\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 201 Created",
+                                    "pm.test('Status code is 201 Created', function() {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response has correct JSON schema",
+                                    "pm.test('Response matches TResponse<VehicleResponse> schema', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    ",
+                                    "    // Base Response properties",
+                                    "    pm.expect(jsonData).to.have.property('isSuccess');",
+                                    "    pm.expect(jsonData).to.have.property('isFailed');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
+                                    "    ",
+                                    "    pm.expect(jsonData.isSuccess).to.be.a('boolean');",
+                                    "    pm.expect(jsonData.isFailed).to.be.a('boolean');",
+                                    "    pm.expect(jsonData.message).to.be.a('string');",
+                                    "});",
+                                    "",
+                                    "// Test 3: isSuccess is true, isFailed is false",
+                                    "pm.test('isSuccess is true and isFailed is false', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.isSuccess).to.eql(true);",
+                                    "    pm.expect(jsonData.isFailed).to.eql(false);",
+                                    "});",
+                                    "",
+                                    "// Test 4: Data matches VehicleResponse schema",
+                                    "pm.test('Data matches VehicleResponse schema', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    ",
+                                    "    pm.expect(data).to.have.property('id');",
+                                    "    pm.expect(data).to.have.property('modelName');",
+                                    "    pm.expect(data).to.have.property('brand');",
+                                    "    pm.expect(data).to.have.property('vehicleType');",
+                                    "    pm.expect(data).to.have.property('description');",
+                                    "    pm.expect(data).to.have.property('releaseYear');",
+                                    "    pm.expect(data).to.have.property('isActive');",
+                                    "    pm.expect(data).to.have.property('isDeleted');",
+                                    "    pm.expect(data).to.have.property('createdAt');",
+                                    "    pm.expect(data).to.have.property('modifiedAt');",
+                                    "    ",
+                                    "    pm.expect(data.id).to.be.a('string');",
+                                    "    pm.expect(data.modelName).to.be.a('string');",
+                                    "    pm.expect(data.brand).to.be.a('string');",
+                                    "    pm.expect(data.vehicleType).to.be.a('string');",
+                                    "    pm.expect(data.releaseYear).to.be.a('number');",
+                                    "    pm.expect(data.isActive).to.be.a('boolean');",
+                                    "    pm.expect(data.isDeleted).to.be.a('boolean');",
+                                    "});",
+                                    "",
+                                    "// Test 5: Data values match request",
+                                    "pm.test('Response data matches request values', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.modelName).to.eql('Camry');",
+                                    "    pm.expect(data.brand).to.eql('Toyota');",
+                                    "    pm.expect(data.vehicleType).to.eql('Sedan');",
+                                    "    pm.expect(data.releaseYear).to.eql(2024);",
+                                    "    pm.expect(data.isActive).to.eql(true);",
+                                    "    pm.expect(data.isDeleted).to.eql(false);",
+                                    "});",
+                                    "",
+                                    "// Save vehicleId for other tests",
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.id) {",
+                                    "    pm.collectionVariables.set('vehicleId', jsonData.data.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Vehicle - Fail (Empty Body)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 400 Bad Request",
+                                    "pm.test('Status code is 400 Bad Request', function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response has validation errors",
+                                    "pm.test('Response has validation errors structure', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('errors');",
+                                    "});",
+                                    "",
+                                    "// Test 3: Required fields have error messages",
+                                    "pm.test('Required fields have error messages', function() {",
+                                    "    var errors = pm.response.json().errors;",
+                                    "    ",
+                                    "    // At least one of these required fields should have an error",
+                                    "    var hasRequiredError = errors.ModelName || errors.Brand || errors.VehicleType || errors.CreatedBy;",
+                                    "    pm.expect(hasRequiredError).to.not.be.undefined;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Vehicle - Invalid (Malformed JSON)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{invalid json}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 400 Bad Request",
+                                    "pm.test('Status code is 400 Bad Request', function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response indicates JSON parsing error",
+                                    "pm.test('Response indicates parsing error', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('errors');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "2. GET BY ID",
+            "item": [
+                {
+                    "name": "Get Vehicle By Id - Success",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{vehicleId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{vehicleId}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response matches TResponse schema",
+                                    "pm.test('Response matches TResponse<VehicleResponse> schema', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('isSuccess');",
+                                    "    pm.expect(jsonData).to.have.property('isFailed');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
+                                    "});",
+                                    "",
+                                    "// Test 3: isSuccess is true",
+                                    "pm.test('isSuccess is true and isFailed is false', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.isSuccess).to.eql(true);",
+                                    "    pm.expect(jsonData.isFailed).to.eql(false);",
+                                    "});",
+                                    "",
+                                    "// Test 4: Data matches VehicleResponse schema",
+                                    "pm.test('Data has all VehicleResponse properties', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data).to.have.property('id');",
+                                    "    pm.expect(data).to.have.property('modelName');",
+                                    "    pm.expect(data).to.have.property('brand');",
+                                    "    pm.expect(data).to.have.property('vehicleType');",
+                                    "    pm.expect(data).to.have.property('description');",
+                                    "    pm.expect(data).to.have.property('releaseYear');",
+                                    "    pm.expect(data).to.have.property('isActive');",
+                                    "    pm.expect(data).to.have.property('isDeleted');",
+                                    "    pm.expect(data).to.have.property('createdAt');",
+                                    "    pm.expect(data).to.have.property('modifiedAt');",
+                                    "});",
+                                    "",
+                                    "// Test 5: Data types are correct",
+                                    "pm.test('Data types are correct', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.id).to.be.a('string');",
+                                    "    pm.expect(data.releaseYear).to.be.a('number');",
+                                    "    pm.expect(data.isActive).to.be.a('boolean');",
+                                    "    pm.expect(data.isDeleted).to.be.a('boolean');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Vehicle By Id - Fail (Not Found)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{notExistGuid}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{notExistGuid}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 404 Not Found",
+                                    "pm.test('Status code is 404 Not Found', function() {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response matches TResponse schema",
+                                    "pm.test('Response matches TResponse schema', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('isSuccess');",
+                                    "    pm.expect(jsonData).to.have.property('isFailed');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});",
+                                    "",
+                                    "// Test 3: isSuccess is false, isFailed is true",
+                                    "pm.test('isSuccess is false and isFailed is true', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.isSuccess).to.eql(false);",
+                                    "    pm.expect(jsonData.isFailed).to.eql(true);",
+                                    "});",
+                                    "",
+                                    "// Test 4: Message indicates not found",
+                                    "pm.test('Message indicates not found', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.include('not found');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Vehicle By Id - Invalid (Bad GUID)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{invalidGuid}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{invalidGuid}}"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 400 Bad Request",
+                                    "pm.test('Status code is 400 Bad Request', function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response has error message",
+                                    "pm.test('Response has error message about invalid GUID', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.include('invalid');",
+                                    "});",
+                                    "",
+                                    "// Test 3: Response indicates field with error",
+                                    "pm.test('Response indicates field is id', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('field');",
+                                    "    pm.expect(jsonData.field).to.eql('id');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "3. UPDATE",
+            "item": [
+                {
+                    "name": "Update Vehicle - Success",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{vehicleId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{vehicleId}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"modelName\": \"Camry Updated\",\n  \"brand\": \"Toyota\",\n  \"vehicleType\": \"Sedan\",\n  \"description\": \"Updated description\",\n  \"releaseYear\": 2025,\n  \"modifiedBy\": \"admin\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response matches TResponse schema",
+                                    "pm.test('Response matches TResponse<VehicleResponse> schema', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('isSuccess');",
+                                    "    pm.expect(jsonData).to.have.property('isFailed');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
+                                    "});",
+                                    "",
+                                    "// Test 3: isSuccess is true",
+                                    "pm.test('isSuccess is true and isFailed is false', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.isSuccess).to.eql(true);",
+                                    "    pm.expect(jsonData.isFailed).to.eql(false);",
+                                    "});",
+                                    "",
+                                    "// Test 4: Data is updated correctly",
+                                    "pm.test('Data is updated correctly', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.modelName).to.eql('Camry Updated');",
+                                    "    pm.expect(data.releaseYear).to.eql(2025);",
+                                    "    pm.expect(data.description).to.eql('Updated description');",
+                                    "});",
+                                    "",
+                                    "// Test 5: Data has all VehicleResponse properties",
+                                    "pm.test('Data has all VehicleResponse properties', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data).to.have.property('id');",
+                                    "    pm.expect(data).to.have.property('modelName');",
+                                    "    pm.expect(data).to.have.property('brand');",
+                                    "    pm.expect(data).to.have.property('vehicleType');",
+                                    "    pm.expect(data).to.have.property('releaseYear');",
+                                    "    pm.expect(data).to.have.property('isActive');",
+                                    "    pm.expect(data).to.have.property('createdAt');",
+                                    "    pm.expect(data).to.have.property('modifiedAt');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Vehicle - Fail (Not Found)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{notExistGuid}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{notExistGuid}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"modelName\": \"Test\",\n  \"brand\": \"Test\",\n  \"vehicleType\": \"Test\",\n  \"description\": \"Test\",\n  \"releaseYear\": 2024,\n  \"modifiedBy\": \"admin\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 404 Not Found",
+                                    "pm.test('Status code is 404 Not Found', function() {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "// Test 2: isSuccess is false, isFailed is true",
+                                    "pm.test('isSuccess is false and isFailed is true', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.isSuccess).to.eql(false);",
+                                    "    pm.expect(jsonData.isFailed).to.eql(true);",
+                                    "});",
+                                    "",
+                                    "// Test 3: Message indicates not found",
+                                    "pm.test('Message indicates not found', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.include('not found');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Vehicle - Invalid (Bad GUID)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{invalidGuid}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{invalidGuid}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"modelName\": \"Test\",\n  \"brand\": \"Test\",\n  \"vehicleType\": \"Test\",\n  \"description\": \"Test\",\n  \"releaseYear\": 2024,\n  \"modifiedBy\": \"admin\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 400 Bad Request",
+                                    "pm.test('Status code is 400 Bad Request', function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response has error message about invalid GUID",
+                                    "pm.test('Response has error message about invalid GUID', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.include('invalid');",
+                                    "});",
+                                    "",
+                                    "// Test 3: Response indicates field is id",
+                                    "pm.test('Response indicates field is id', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.field).to.eql('id');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "4. GET LIST",
+            "item": [
+                {
+                    "name": "Get List - Basic (No Params)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response matches TResponse<VehicleListResponse> schema",
+                                    "pm.test('Response matches TResponse<VehicleListResponse> schema', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('isSuccess');",
+                                    "    pm.expect(jsonData).to.have.property('isFailed');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData).to.have.property('data');",
+                                    "});",
+                                    "",
+                                    "// Test 3: Data matches VehicleListResponse schema",
+                                    "pm.test('Data matches VehicleListResponse schema', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data).to.have.property('pageNumber');",
+                                    "    pm.expect(data).to.have.property('pageSize');",
+                                    "    pm.expect(data).to.have.property('totalCount');",
+                                    "    pm.expect(data).to.have.property('count');",
+                                    "    pm.expect(data).to.have.property('items');",
+                                    "    ",
+                                    "    pm.expect(data.pageNumber).to.be.a('number');",
+                                    "    pm.expect(data.pageSize).to.be.a('number');",
+                                    "    pm.expect(data.totalCount).to.be.a('number');",
+                                    "    pm.expect(data.count).to.be.a('number');",
+                                    "    pm.expect(data.items).to.be.an('array');",
+                                    "});",
+                                    "",
+                                    "// Test 4: Default pageNumber is 1",
+                                    "pm.test('Default pageNumber is 1', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.pageNumber).to.eql(1);",
+                                    "});",
+                                    "",
+                                    "// Test 5: Items match VehicleResponse schema",
+                                    "pm.test('Each item matches VehicleResponse schema', function() {",
+                                    "    var items = pm.response.json().data.items;",
+                                    "    if (items.length > 0) {",
+                                    "        var item = items[0];",
+                                    "        pm.expect(item).to.have.property('id');",
+                                    "        pm.expect(item).to.have.property('modelName');",
+                                    "        pm.expect(item).to.have.property('brand');",
+                                    "        pm.expect(item).to.have.property('vehicleType');",
+                                    "        pm.expect(item).to.have.property('releaseYear');",
+                                    "        pm.expect(item).to.have.property('isActive');",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Paging (Page 1, Size 5)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?pageNumber=1&pageSize=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "pageNumber",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: PageNumber matches request",
+                                    "pm.test('PageNumber is 1', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.pageNumber).to.eql(1);",
+                                    "});",
+                                    "",
+                                    "// Test 3: PageSize matches request",
+                                    "pm.test('PageSize is 5', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.pageSize).to.eql(5);",
+                                    "});",
+                                    "",
+                                    "// Test 4: Items count <= pageSize",
+                                    "pm.test('Items count is less than or equal to pageSize', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.items.length).to.be.at.most(5);",
+                                    "});",
+                                    "",
+                                    "// Test 5: Count matches items length",
+                                    "pm.test('Count matches items length', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.count).to.eql(data.items.length);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Paging (Page 2, Size 5)",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?pageNumber=2&pageSize=5",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "pageNumber",
+                                    "value": "2"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "5"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: PageNumber is 2",
+                                    "pm.test('PageNumber is 2', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.pageNumber).to.eql(2);",
+                                    "});",
+                                    "",
+                                    "// Test 3: Response has valid structure",
+                                    "pm.test('Response has valid VehicleListResponse structure', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data).to.have.property('items');",
+                                    "    pm.expect(data).to.have.property('totalCount');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Search by ModelName",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?modelName=Camry",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "modelName",
+                                    "value": "Camry"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: All items contain 'Camry' in modelName",
+                                    "pm.test('All items contain Camry in modelName', function() {",
+                                    "    var items = pm.response.json().data.items;",
+                                    "    items.forEach(function(item) {",
+                                    "        pm.expect(item.modelName.toLowerCase()).to.include('camry');",
+                                    "    });",
+                                    "});",
+                                    "",
+                                    "// Test 3: Response has valid structure",
+                                    "pm.test('Response has valid structure', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.items).to.be.an('array');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Search by Brand",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?brand=Toyota",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "brand",
+                                    "value": "Toyota"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: All items have Toyota brand",
+                                    "pm.test('All items have Toyota brand', function() {",
+                                    "    var items = pm.response.json().data.items;",
+                                    "    items.forEach(function(item) {",
+                                    "        pm.expect(item.brand.toLowerCase()).to.include('toyota');",
+                                    "    });",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Search by VehicleType",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?vehicleType=Sedan",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "vehicleType",
+                                    "value": "Sedan"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: All items have Sedan vehicleType",
+                                    "pm.test('All items have Sedan vehicleType', function() {",
+                                    "    var items = pm.response.json().data.items;",
+                                    "    items.forEach(function(item) {",
+                                    "        pm.expect(item.vehicleType.toLowerCase()).to.include('sedan');",
+                                    "    });",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Filter by ReleaseYear",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?releaseYear=2024",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "releaseYear",
+                                    "value": "2024"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: All items have releaseYear 2024",
+                                    "pm.test('All items have releaseYear 2024', function() {",
+                                    "    var items = pm.response.json().data.items;",
+                                    "    items.forEach(function(item) {",
+                                    "        pm.expect(item.releaseYear).to.eql(2024);",
+                                    "    });",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Combined Search + Paging",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?brand=Toyota&pageNumber=1&pageSize=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "brand",
+                                    "value": "Toyota"
+                                },
+                                {
+                                    "key": "pageNumber",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "pageSize",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: PageNumber and PageSize are correct",
+                                    "pm.test('Paging parameters are correct', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.pageNumber).to.eql(1);",
+                                    "    pm.expect(data.pageSize).to.eql(10);",
+                                    "});",
+                                    "",
+                                    "// Test 3: All items have Toyota brand",
+                                    "pm.test('All items have Toyota brand', function() {",
+                                    "    var items = pm.response.json().data.items;",
+                                    "    items.forEach(function(item) {",
+                                    "        pm.expect(item.brand.toLowerCase()).to.include('toyota');",
+                                    "    });",
+                                    "});",
+                                    "",
+                                    "// Test 4: Items count <= pageSize",
+                                    "pm.test('Items count is <= pageSize', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.items.length).to.be.at.most(10);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Empty Result",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?modelName=NonExistentModel12345",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "modelName",
+                                    "value": "NonExistentModel12345"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Items is empty array",
+                                    "pm.test('Items is empty array', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.items).to.be.an('array');",
+                                    "    pm.expect(data.items.length).to.eql(0);",
+                                    "});",
+                                    "",
+                                    "// Test 3: TotalCount is 0",
+                                    "pm.test('TotalCount is 0', function() {",
+                                    "    var data = pm.response.json().data;",
+                                    "    pm.expect(data.totalCount).to.eql(0);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get List - Multiple Filters",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles?brand=Toyota&vehicleType=Sedan&releaseYear=2024",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles"
+                            ],
+                            "query": [
+                                {
+                                    "key": "brand",
+                                    "value": "Toyota"
+                                },
+                                {
+                                    "key": "vehicleType",
+                                    "value": "Sedan"
+                                },
+                                {
+                                    "key": "releaseYear",
+                                    "value": "2024"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 200 OK",
+                                    "pm.test('Status code is 200 OK', function() {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "// Test 2: isSuccess is true",
+                                    "pm.test('isSuccess is true', function() {",
+                                    "    pm.expect(pm.response.json().isSuccess).to.eql(true);",
+                                    "});",
+                                    "",
+                                    "// Test 3: All items match all filters",
+                                    "pm.test('All items match all filters', function() {",
+                                    "    var items = pm.response.json().data.items;",
+                                    "    items.forEach(function(item) {",
+                                    "        pm.expect(item.brand.toLowerCase()).to.include('toyota');",
+                                    "        pm.expect(item.vehicleType.toLowerCase()).to.include('sedan');",
+                                    "        pm.expect(item.releaseYear).to.eql(2024);",
+                                    "    });",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "5. DELETE",
+            "item": [
+                {
+                    "name": "Delete Vehicle - Success",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{vehicleId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{vehicleId}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"modifiedBy\": \"admin\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 204 No Content",
+                                    "pm.test('Status code is 204 No Content', function() {",
+                                    "    pm.response.to.have.status(204);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response body is empty",
+                                    "pm.test('Response body is empty', function() {",
+                                    "    pm.expect(pm.response.text()).to.be.empty;",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Vehicle - Fail (Not Found)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{notExistGuid}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{notExistGuid}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"modifiedBy\": \"admin\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 404 Not Found",
+                                    "pm.test('Status code is 404 Not Found', function() {",
+                                    "    pm.response.to.have.status(404);",
+                                    "});",
+                                    "",
+                                    "// Test 2: isSuccess is false, isFailed is true",
+                                    "pm.test('isSuccess is false and isFailed is true', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.isSuccess).to.eql(false);",
+                                    "    pm.expect(jsonData.isFailed).to.eql(true);",
+                                    "});",
+                                    "",
+                                    "// Test 3: Message indicates not found",
+                                    "pm.test('Message indicates not found', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.include('not found');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Vehicle - Invalid (Bad GUID)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/vehicles/{{invalidGuid}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "vehicles",
+                                "{{invalidGuid}}"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"modifiedBy\": \"admin\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "// Test 1: Status code is 400 Bad Request",
+                                    "pm.test('Status code is 400 Bad Request', function() {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "// Test 2: Response has error message about invalid GUID",
+                                    "pm.test('Response has error message about invalid GUID', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.include('invalid');",
+                                    "});",
+                                    "",
+                                    "// Test 3: Response indicates field is id",
+                                    "pm.test('Response indicates field is id', function() {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.field).to.eql('id');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

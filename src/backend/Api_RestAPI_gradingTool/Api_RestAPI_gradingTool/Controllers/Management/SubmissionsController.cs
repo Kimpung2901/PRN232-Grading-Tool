@@ -73,6 +73,7 @@ public sealed class SubmissionsController : ApiControllerBase
         });
     }
 
+    [HttpGet("exams/{examId:int}/grading-results")]
     [HttpGet("exams/{examId:int}/submission-reports")]
     public async Task<ActionResult<IReadOnlyList<SubmissionReportDto>>> GetReportsByExam(
         int examId,
@@ -169,6 +170,7 @@ public sealed class SubmissionsController : ApiControllerBase
         return NoContent();
     }
 
+    [HttpPost("submissions/{id:int}/regrade-requests")]
     [HttpPost("submissions/{id:int}/requeue")]
     public async Task<ActionResult<SubmissionDto>> Requeue(int id, CancellationToken cancellationToken = default)
     {
@@ -189,6 +191,7 @@ public sealed class SubmissionsController : ApiControllerBase
         });
     }
 
+    [HttpPost("exams/{examId:int}/regrade-requests")]
     [HttpPost("exams/{examId:int}/submissions/requeue")]
     public async Task<ActionResult<object>> RequeueByExam(int examId, CancellationToken cancellationToken = default)
     {

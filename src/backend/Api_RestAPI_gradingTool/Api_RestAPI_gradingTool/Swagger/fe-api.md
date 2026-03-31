@@ -130,7 +130,7 @@ Response 400, 404, 409
 
 - `ProblemDetails`
 
-### GET `/api/exams/{examId}/submission-reports`
+### GET `/api/exams/{examId}/grading-results`
 
 Get grading scores for all submissions in an exam.
 
@@ -154,9 +154,9 @@ Response 200
 
 ## Grading runner
 
-### GET `/api/testrunner`
+### POST `/api/grading-runs`
 
-Start runner (fire-and-forget).
+Start runner for pending submissions (fire-and-forget).
 
 Response 200
 
@@ -177,7 +177,7 @@ Response 409
 }
 ```
 
-### GET `/api/exams/{examId}/testrunner`
+### POST `/api/exams/{examId}/grading-runs`
 
 Start runner for one specific exam only.
 
@@ -193,7 +193,7 @@ Response 409
 
 - `ProblemDetails`
 
-### GET `/api/testrunner/status`
+### GET `/api/grading-runs/current`
 
 Get current runner status.
 
@@ -210,7 +210,7 @@ Response 200
 }
 ```
 
-### POST `/api/testresults`
+### POST `/api/grading-results`
 
 Runner pushes grading result. API saves to database and broadcasts to FE.
 
@@ -218,6 +218,7 @@ Request body
 
 ```json
 {
+  "submissionId": 10,
   "studentName": "1_HE150001_20260327",
   "score": 80,
   "status": "build ok",
@@ -229,6 +230,7 @@ Response 200
 
 ```json
 {
+  "submissionId": 10,
   "studentName": "1_HE150001_20260327",
   "score": 80,
   "status": "build ok",
@@ -466,7 +468,7 @@ Response 400, 404, 409
 
 - `ProblemDetails`
 
-### POST `/api/submissions/{id}/requeue`
+### POST `/api/submissions/{id}/regrade-requests`
 
 Requeue one submission for grading again. Existing stored score/report is cleared.
 
@@ -483,9 +485,19 @@ Response 200
 }
 ```
 
-### POST `/api/exams/{examId}/submissions/requeue`
+### POST `/api/exams/{examId}/regrade-requests`
 
 Requeue all submissions of an exam for grading again. Existing stored scores/reports are cleared.
+
+Legacy aliases still supported for backward compatibility:
+
+- `GET /api/testrunner`
+- `GET /api/exams/{examId}/testrunner`
+- `GET /api/testrunner/status`
+- `POST /api/testresults`
+- `GET /api/exams/{examId}/submission-reports`
+- `POST /api/submissions/{id}/requeue`
+- `POST /api/exams/{examId}/submissions/requeue`
 
 Response 200
 

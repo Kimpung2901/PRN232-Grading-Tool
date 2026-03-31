@@ -42,6 +42,7 @@ public sealed class TestResultsController : ApiControllerBase
         _logger = logger;
     }
 
+    [HttpPost("grading-runs")]
     [HttpGet("testrunner")]
     public async Task<ActionResult> StartRunner(CancellationToken cancellationToken = default)
     {
@@ -60,6 +61,7 @@ public sealed class TestResultsController : ApiControllerBase
         });
     }
 
+    [HttpPost("exams/{examId:int}/grading-runs")]
     [HttpGet("exams/{examId:int}/testrunner")]
     public async Task<ActionResult> StartRunnerForExam(int examId, CancellationToken cancellationToken = default)
     {
@@ -78,6 +80,7 @@ public sealed class TestResultsController : ApiControllerBase
         });
     }
 
+    [HttpGet("grading-runs/current")]
     [HttpGet("testrunner/status")]
     public ActionResult GetRunnerStatus()
     {
@@ -95,6 +98,7 @@ public sealed class TestResultsController : ApiControllerBase
         }
     }
 
+    [HttpPost("grading-results")]
     [HttpPost("testresults")]
     public async Task<ActionResult<TestResultRequest>> Post(
         [FromBody] TestResultRequest request,
@@ -253,20 +257,45 @@ public sealed class TestResultsController : ApiControllerBase
 
     private async Task StartRunnerCoreAsync(int? examId, CancellationToken cancellationToken)
     {
+        DateTimeOffset startedAtUtc;
         lock (RunnerStateLock)
         {
             if (_isRunnerRunning)
             {
                 throw new InvalidOperationException("Runner is already running.");
             }
+
+            _isRunnerRunning = true;
+            _currentProcessId = null;
+            startedAtUtc = DateTimeOffset.UtcNow;
+            _startedAtUtc = startedAtUtc;
+            _lastCompletedAtUtc = null;
+            _lastExitCode = null;
+            _lastError = null;
         }
 
-        var runnerExecutablePath = ResolveRunnerPath();
-        var manifestPath = await WritePendingManifestAsync(runnerExecutablePath, examId, cancellationToken);
-        var processStartInfo = BuildStartInfo(runnerExecutablePath);
-        processStartInfo.ArgumentList.Add("--manifest");
-        processStartInfo.ArgumentList.Add(manifestPath);
-        StartRunnerInBackground(processStartInfo);
+        try
+        {
+            var runnerExecutablePath = ResolveRunnerPath();
+            var manifestPath = await WritePendingManifestAsync(runnerExecutablePath, examId, cancellationToken);
+            var processStartInfo = BuildStartInfo(runnerExecutablePath);
+            processStartInfo.ArgumentList.Add("--manifest");
+            processStartInfo.ArgumentList.Add(manifestPath);
+            StartRunnerInBackground(processStartInfo, startedAtUtc);
+        }
+        catch
+        {
+            lock (RunnerStateLock)
+            {
+                _isRunnerRunning = false;
+                _currentProcessId = null;
+                _startedAtUtc = null;
+                _lastCompletedAtUtc = DateTimeOffset.UtcNow;
+                _lastExitCode = -1;
+            }
+
+            throw;
+        }
     }
 
     private async Task<string> WritePendingManifestAsync(string runnerExecutablePath, int? examId, CancellationToken cancellationToken)
@@ -343,7 +372,7 @@ public sealed class TestResultsController : ApiControllerBase
         return manifestPath;
     }
 
-    private void StartRunnerInBackground(ProcessStartInfo startInfo)
+    private void StartRunnerInBackground(ProcessStartInfo startInfo, DateTimeOffset startedAtUtc)
     {
         _ = Task.Run(async () =>
         {
@@ -358,7 +387,7 @@ public sealed class TestResultsController : ApiControllerBase
                 {
                     _isRunnerRunning = true;
                     _currentProcessId = processId;
-                    _startedAtUtc = DateTimeOffset.UtcNow;
+                    _startedAtUtc = startedAtUtc;
                     _lastCompletedAtUtc = null;
                     _lastExitCode = null;
                     _lastError = null;

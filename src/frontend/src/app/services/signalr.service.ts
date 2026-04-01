@@ -43,19 +43,29 @@ export class SignalRService {
         }
 
         this.hubConnection = new signalR.HubConnectionBuilder()
-            .withUrl(`${environment.apiUrl}/testHub`, {
-                skipNegotiation: true,
-                transport: signalR.HttpTransportType.WebSockets
-            })
+            .withUrl(`${environment.apiUrl}/testHub`)
             .withAutomaticReconnect()
+            .configureLogging(signalR.LogLevel.Information)
             .build();
+
+        this.registerHandlers();
+
+        this.hubConnection.onreconnecting(error => {
+            console.warn('SignalR reconnecting', error);
+        });
+
+        this.hubConnection.onreconnected(connectionId => {
+            console.log('SignalR reconnected', connectionId);
+        });
+
+        this.hubConnection.onclose(error => {
+            console.error('SignalR connection closed', error);
+        });
 
         this.hubConnection
             .start()
             .then(() => console.log('SignalR Connection Started'))
             .catch(err => console.error('Error while starting SignalR connection: ' + err));
-
-        this.registerHandlers();
     }
 
     public stopConnection(): void {

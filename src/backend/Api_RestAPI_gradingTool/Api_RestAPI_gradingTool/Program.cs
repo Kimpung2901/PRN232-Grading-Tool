@@ -39,7 +39,21 @@ builder.Services.AddScoped<Application.Contracts.Management.IExamService, Applic
 builder.Services.AddScoped<Application.Contracts.Management.ITestCaseService, Application.Services.TestCaseService>();
 builder.Services.AddScoped<Application.Contracts.Management.ISubmissionService, Application.Services.SubmissionService>();
 
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:4200" };
+var configuredOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+var allowedOrigins = configuredOrigins
+    .Concat(
+    [
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
+        "https://localhost:4200",
+        "https://127.0.0.1:4200",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://localhost:5173",
+        "https://127.0.0.1:5173"
+    ])
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFE", p =>
@@ -81,7 +95,10 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("AllowFE");
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 

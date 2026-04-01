@@ -65,8 +65,7 @@ export class RunnerComponent implements OnInit, OnDestroy {
         }));
 
         this.subs.add(this.signalRService.testResult$.subscribe(r => {
-            this.results.unshift(r);
-            if (this.results.length > 50) this.results.pop();
+            this.results = [r, ...this.results].slice(0, 50);
         }));
 
         this.subs.add(this.signalRService.completion$.subscribe(log => {

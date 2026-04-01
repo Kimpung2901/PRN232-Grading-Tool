@@ -10,22 +10,6 @@ const routes: Routes = [
         data: { title: 'Exams' },
     },
     {
-        path: 'data/:id',
-        loadComponent: () =>
-            import('./detail/detail.component').then(
-                (m) => m.DetailComponent
-            ),
-        data: { title: 'Exam Details' },
-    },
-    {
-        path: 'data/:id/test-cases',
-        loadComponent: () =>
-            import('./test-cases/test-cases.component').then(
-                (m) => m.TestCasesComponent
-            ),
-        data: { title: 'Test Case Configuration' },
-    },
-    {
         path: 'data/create',
         loadComponent: () =>
             import('./create/create.component').then(
@@ -40,6 +24,22 @@ const routes: Routes = [
                 (m) => m.RunnerComponent
             ),
         data: { title: 'Grading Runner' },
+    },
+    {
+        path: 'data/:id',
+        loadComponent: () =>
+            import('./detail/detail.component').then(
+                (m) => m.DetailComponent
+            ),
+        data: { title: 'Exam Details' },
+    },
+    {
+        path: 'data/:id/test-cases',
+        loadComponent: () =>
+            import('./test-cases/test-cases.component').then(
+                (m) => m.TestCasesComponent
+            ),
+        data: { title: 'Test Case Configuration' },
     },
     { path: 'create', redirectTo: 'data/create' },
     { path: 'runner', redirectTo: 'data/runner' },

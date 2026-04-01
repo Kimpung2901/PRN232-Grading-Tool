@@ -1,6 +1,10 @@
 <div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent">
+    <!-- Page Header -->
     <div class="flex items-center justify-between border-b bg-white px-8 py-4 text-sm dark:bg-card">
-        <a [routerLink]="['/exams']" class="font-semibold text-gray-800 dark:text-white hover:text-primary transition">← Exams</a>
+        <a [routerLink]="['/exams']" class="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-primary transition">
+            <mat-icon svgIcon="heroicons_outline:arrow-left" class="!h-4 !w-4"></mat-icon>
+            Exams
+        </a>
         <div class="text-secondary flex items-center gap-1">
             <span>Exams</span><span>•</span>
             <span class="font-semibold text-primary">New Exam</span>
@@ -8,46 +12,64 @@
     </div>
 
     <div class="mx-8 mb-6 mt-6 max-w-2xl">
-        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card">
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card overflow-hidden">
+            <!-- Card Header -->
             <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white">Create New Exam</h1>
-                <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Provide an exam name and upload the SQL initialization script.</p>
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <mat-icon svgIcon="heroicons_outline:document-plus" class="!h-5 !w-5"></mat-icon>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Create New Exam</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Provide an exam name and optionally upload the SQL initialization script.</p>
+                    </div>
+                </div>
             </div>
 
             <form (ngSubmit)="onSubmit()" [formGroup]="form" class="p-6 space-y-6">
                 <!-- Exam Name -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Exam Name <span class="text-red-500">*</span></label>
-                    <input formControlName="name" type="text"
-                        class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        placeholder="e.g. Midterm PRN232 - Spring 2026"/>
-                    <p *ngIf="form.get('name')?.touched && form.get('name')?.hasError('required')" class="mt-1 text-xs text-red-500">Exam name is required.</p>
-                    <p *ngIf="form.get('name')?.touched && form.get('name')?.hasError('minlength')" class="mt-1 text-xs text-red-500">Must be at least 3 characters.</p>
-                </div>
+                <mat-form-field class="w-full" appearance="outline">
+                    <mat-label>Exam Name</mat-label>
+                    <mat-icon matPrefix svgIcon="heroicons_outline:academic-cap" class="mr-2"></mat-icon>
+                    <input matInput formControlName="name" placeholder="e.g. Midterm PRN232 - Spring 2026"/>
+                    <mat-error *ngIf="form.get('name')?.hasError('required')">Exam name is required.</mat-error>
+                    <mat-error *ngIf="form.get('name')?.hasError('minlength')">Must be at least 3 characters.</mat-error>
+                    <mat-hint>Unique name for this exam configuration</mat-hint>
+                </mat-form-field>
 
                 <!-- SQL File Upload -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">SQL Initialization Script <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        SQL Initialization Script <span class="text-gray-400 font-normal">(Optional)</span>
+                    </label>
                     <div (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
-                        [class.border-indigo-500]="isDragging"
-                        class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 text-center transition-colors cursor-pointer dark:border-gray-600"
+                        [class.!border-primary]="isDragging"
+                        class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 text-center transition-colors cursor-pointer dark:border-gray-600 hover:border-primary/50"
                         (click)="sqlFileInput.click()">
                         <input #sqlFileInput type="file" accept=".sql" class="hidden" (change)="onFileSelect($event)"/>
-                        <div *ngIf="!uploadedFile">
-                            <svg class="mx-auto h-10 w-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                            <p class="text-sm text-gray-600 dark:text-gray-400"><span class="font-semibold text-indigo-600">Click to upload</span> or drag and drop</p>
-                            <p class="text-xs text-gray-400 mt-1">.sql files only</p>
-                        </div>
-                        <div *ngIf="uploadedFile" class="flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+
+                        <!-- No file selected -->
+                        <div *ngIf="!uploadedFile" class="flex flex-col items-center gap-2">
+                            <div class="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                <mat-icon svgIcon="heroicons_outline:cloud-arrow-up" class="!h-6 !w-6"></mat-icon>
                             </div>
-                            <div class="text-left">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ uploadedFile.name }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                <span class="font-semibold text-primary">Click to upload</span> or drag and drop
+                            </p>
+                            <p class="text-xs text-gray-400">.sql files only</p>
+                        </div>
+
+                        <!-- File selected -->
+                        <div *ngIf="uploadedFile" class="flex items-center gap-3 bg-blue-50/80 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 w-full">
+                            <div class="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-300 flex-shrink-0">
+                                <mat-icon svgIcon="heroicons_outline:document-text" class="!h-5 !w-5"></mat-icon>
+                            </div>
+                            <div class="text-left min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ uploadedFile.name }}</p>
                                 <p class="text-xs text-gray-500">{{ formatSize(uploadedFile.size) }}</p>
                             </div>
-                            <button type="button" (click)="removeFile(); $event.stopPropagation()" class="ml-auto rounded-full p-1 text-gray-400 hover:bg-red-50 hover:text-red-500 transition">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <button type="button" mat-icon-button (click)="removeFile(); $event.stopPropagation()" class="!text-gray-400 hover:!text-red-500">
+                                <mat-icon svgIcon="heroicons_outline:x-mark" class="!h-4 !w-4"></mat-icon>
                             </button>
                         </div>
                     </div>
@@ -55,13 +77,10 @@
 
                 <!-- Actions -->
                 <div class="flex gap-3 pt-2">
-                    <button type="button" (click)="onCancel()" class="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition">Cancel</button>
-                    <button type="submit" [disabled]="isSubmitting" class="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition">
-                        <span *ngIf="!isSubmitting">Create Exam</span>
-                        <span *ngIf="isSubmitting" class="flex items-center justify-center gap-2">
-                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                            Creating...
-                        </span>
+                    <button type="button" mat-stroked-button (click)="onCancel()" class="flex-1 !rounded-xl">Cancel</button>
+                    <button type="submit" mat-flat-button color="primary" [disabled]="isSubmitting" class="flex-1 !rounded-xl">
+                        <mat-spinner *ngIf="isSubmitting" diameter="18" class="mr-2 inline-block"></mat-spinner>
+                        <span>{{ isSubmitting ? 'Creating...' : 'Create Exam' }}</span>
                     </button>
                 </div>
             </form>

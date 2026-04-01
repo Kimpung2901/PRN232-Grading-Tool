@@ -4,10 +4,23 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { Router, RouterModule } from '@angular/router';
 import { ExamsService } from '../../../../services/exams.service';
 
+// Angular Material
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDividerModule } from '@angular/material/divider';
+
 @Component({
     selector: 'app-exams-create',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+    imports: [
+        CommonModule, FormsModule, ReactiveFormsModule, RouterModule,
+        MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
+        MatSnackBarModule, MatProgressSpinnerModule, MatDividerModule
+    ],
     templateUrl: './create.component.html',
 })
 export class CreateComponent {
@@ -19,7 +32,8 @@ export class CreateComponent {
     constructor(
         private fb: FormBuilder,
         private router: Router,
-        private examsService: ExamsService
+        private examsService: ExamsService,
+        private snackBar: MatSnackBar
     ) {
         this.form = this.fb.group({
             name: ['', [Validators.required, Validators.minLength(3)]]
@@ -55,7 +69,9 @@ export class CreateComponent {
         if (file.name.endsWith('.sql')) {
             this.uploadedFile = file;
         } else {
-            alert('Please select a valid SQL script file (.sql)');
+            this.snackBar.open('Please select a valid SQL script file (.sql)', 'Dismiss', {
+                duration: 3000, panelClass: ['snack-error']
+            });
         }
     }
 
@@ -72,28 +88,32 @@ export class CreateComponent {
     }
 
     onSubmit(): void {
-        if (this.form.valid && this.uploadedFile) {
-            this.isSubmitting = true;
-            this.examsService.createExam({
-                body: {
-                    ExamName: this.form.value.name,
-                    SqlFile: this.uploadedFile
-                }
-            }).subscribe({
-                next: () => {
-                    this.isSubmitting = false;
-                    this.router.navigate(['/exams']);
-                },
-                error: (err) => {
-                    this.isSubmitting = false;
-                    console.error('Error creating exam', err);
-                }
-            });
-        } else if (!this.uploadedFile) {
-            alert('Please upload an SQL Initialization Script.');
-        } else {
+        if (this.form.invalid) {
             this.form.markAllAsTouched();
+            return;
         }
+        this.isSubmitting = true;
+        this.examsService.createExam({
+            body: {
+                ExamName: this.form.value.name,
+                SqlFile: this.uploadedFile ?? undefined
+            }
+        }).subscribe({
+            next: (exam) => {
+                this.isSubmitting = false;
+                this.snackBar.open(`Exam "${exam.examName}" created successfully!`, 'View', {
+                    duration: 3000, panelClass: ['snack-success']
+                });
+                this.router.navigate(['/exams/data', exam.examId]);
+            },
+            error: (err) => {
+                this.isSubmitting = false;
+                const msg = err?.error?.detail || 'Failed to create exam. Please try again.';
+                this.snackBar.open(msg, 'Dismiss', {
+                    duration: 5000, panelClass: ['snack-error']
+                });
+            }
+        });
     }
 
     onCancel(): void {

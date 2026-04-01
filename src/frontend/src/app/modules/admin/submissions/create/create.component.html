@@ -1,6 +1,10 @@
 <div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent text-sm">
+    <!-- Page Header -->
     <div class="flex items-center justify-between border-b bg-white px-8 py-4 dark:bg-card">
-        <a [routerLink]="['/submissions']" [queryParamsHandling]="'preserve'" class="font-semibold text-gray-800 dark:text-white hover:text-primary transition">← Submissions</a>
+        <a [routerLink]="['/submissions']" [queryParamsHandling]="'preserve'" class="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-primary transition">
+            <mat-icon svgIcon="heroicons_outline:arrow-left" class="!h-4 !w-4"></mat-icon>
+            Submissions
+        </a>
         <div class="text-secondary flex items-center gap-1">
             <span>Submissions</span><span>•</span>
             <span class="font-semibold text-primary">New Submission</span>
@@ -8,74 +12,82 @@
     </div>
 
     <div class="mx-8 mb-6 mt-6 max-w-2xl">
-        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card">
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card overflow-hidden">
+            <!-- Card Header -->
             <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white">Manual Project Submission</h1>
-                <p class="text-gray-500 mt-1 dark:text-gray-400">Manually upload a project archive on behalf of a student.</p>
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <mat-icon svgIcon="heroicons_outline:cloud-arrow-up" class="!h-5 !w-5"></mat-icon>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Manual Project Submission</h1>
+                        <p class="text-gray-500 dark:text-gray-400">Manually upload a project archive on behalf of a student.</p>
+                    </div>
+                </div>
             </div>
 
             <form (ngSubmit)="onSubmit()" [formGroup]="form" class="p-6 space-y-6">
                 <!-- Select Exam -->
-                <div>
-                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1.5">Target Exam <span class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <select formControlName="examId" 
-                            class="block w-full appearance-none rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                            <option value="">— Select an exam —</option>
-                            <option *ngFor="let exam of exams" [value]="exam.examId">{{ exam.examName }}</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                        </div>
-                    </div>
-                    <p *ngIf="form.get('examId')?.touched && form.get('examId')?.hasError('required')" class="mt-1 text-xs text-red-500">Please select an exam.</p>
-                </div>
+                <mat-form-field class="w-full" appearance="outline">
+                    <mat-label>Target Exam</mat-label>
+                    <mat-icon matPrefix svgIcon="heroicons_outline:academic-cap"></mat-icon>
+                    <mat-select formControlName="examId">
+                        <mat-option value="">— Select an exam —</mat-option>
+                        <mat-option *ngFor="let exam of exams" [value]="exam.examId">{{ exam.examName }}</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="form.get('examId')?.hasError('required')">Please select an exam.</mat-error>
+                </mat-form-field>
 
                 <!-- Student Information -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1.5">Student Name <span class="text-red-500">*</span></label>
-                        <input formControlName="studentName" type="text"
-                            class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder="e.g. John Doe"/>
-                        <p *ngIf="form.get('studentName')?.touched && form.get('studentName')?.hasError('required')" class="mt-1 text-xs text-red-500">Student name is required.</p>
-                    </div>
-                    <div>
-                        <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1.5">Student Code <span class="text-red-500">*</span></label>
-                        <input formControlName="studentCode" type="text"
-                            class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            placeholder="e.g. SE15001"/>
-                        <p *ngIf="form.get('studentCode')?.touched && form.get('studentCode')?.hasError('required')" class="mt-1 text-xs text-red-500">Student code is required.</p>
-                    </div>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Student Name</mat-label>
+                        <mat-icon matPrefix svgIcon="heroicons_outline:user"></mat-icon>
+                        <input matInput formControlName="studentName" placeholder="e.g. John Doe"/>
+                        <mat-error *ngIf="form.get('studentName')?.hasError('required')">Student name is required.</mat-error>
+                        <mat-error *ngIf="form.get('studentName')?.hasError('minlength')">At least 2 characters.</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Student Code</mat-label>
+                        <mat-icon matPrefix svgIcon="heroicons_outline:identification"></mat-icon>
+                        <input matInput formControlName="studentCode" placeholder="e.g. HE150001"/>
+                        <mat-error *ngIf="form.get('studentCode')?.hasError('required')">Student code is required.</mat-error>
+                    </mat-form-field>
                 </div>
 
                 <!-- Archive Upload -->
                 <div>
-                    <label class="block font-medium text-gray-700 dark:text-gray-300 mb-1.5">Project Archive (.zip, .rar, .7z) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Project Archive <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal ml-1">(.zip, .rar, .7z)</span>
+                    </label>
                     <div (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)"
-                        [class.border-indigo-500]="isDragging"
-                        class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 text-center transition-colors cursor-pointer dark:border-gray-600"
+                        [class.!border-primary]="isDragging"
+                        class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-8 text-center transition-colors cursor-pointer dark:border-gray-600 hover:border-primary/50"
                         (click)="archiveInput.click()">
                         <input #archiveInput type="file" accept=".zip,.rar,.7z" class="hidden" (change)="onFileSelect($event)"/>
-                        
-                        <div *ngIf="!selectedFile">
-                            <div class="h-12 w-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mx-auto mb-3 transition group-hover:bg-indigo-100">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+
+                        <!-- No file selected -->
+                        <div *ngIf="!selectedFile" class="flex flex-col items-center gap-2">
+                            <div class="h-12 w-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                <mat-icon svgIcon="heroicons_outline:archive-box-arrow-down" class="!h-6 !w-6"></mat-icon>
                             </div>
                             <p class="text-sm font-semibold text-indigo-600">Click to upload <span class="text-gray-500 font-normal">or drag and drop</span></p>
-                            <p class="text-xs text-gray-400 mt-1">Archived project file up to 50MB</p>
+                            <p class="text-xs text-gray-400">Archive file up to 50MB</p>
                         </div>
 
-                        <div *ngIf="selectedFile" class="flex items-center gap-3 bg-indigo-50/50 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30 w-full max-w-sm mx-auto">
+                        <!-- File selected -->
+                        <div *ngIf="selectedFile" class="flex items-center gap-3 bg-indigo-50/80 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30 w-full">
                             <div class="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-300 flex-shrink-0">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <mat-icon svgIcon="heroicons_outline:archive-box" class="!h-5 !w-5"></mat-icon>
                             </div>
-                            <div class="text-left min-w-0">
+                            <div class="text-left min-w-0 flex-1">
                                 <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ selectedFile.name }}</p>
                                 <p class="text-xs text-gray-500">{{ formatSize(selectedFile.size) }}</p>
                             </div>
-                            <button type="button" (click)="removeFile(); $event.stopPropagation()" class="ml-auto rounded-full p-1 text-gray-400 hover:bg-white hover:text-red-500 transition">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <button type="button" mat-icon-button (click)="removeFile(); $event.stopPropagation()" class="!text-gray-400 hover:!text-red-500">
+                                <mat-icon svgIcon="heroicons_outline:x-mark" class="!h-4 !w-4"></mat-icon>
                             </button>
                         </div>
                     </div>
@@ -83,13 +95,10 @@
 
                 <!-- Form Actions -->
                 <div class="flex gap-3 pt-2">
-                    <button type="button" (click)="onCancel()" class="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition">Cancel</button>
-                    <button type="submit" [disabled]="isSubmitting" class="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition">
-                        <span *ngIf="!isSubmitting">Upload Submission</span>
-                        <span *ngIf="isSubmitting" class="flex items-center justify-center gap-2">
-                            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                            Uploading...
-                        </span>
+                    <button type="button" mat-stroked-button (click)="onCancel()" class="flex-1 !rounded-xl">Cancel</button>
+                    <button type="submit" mat-flat-button color="primary" [disabled]="isSubmitting" class="flex-1 !rounded-xl gap-2">
+                        <mat-spinner *ngIf="isSubmitting" diameter="18"></mat-spinner>
+                        <span>{{ isSubmitting ? 'Uploading...' : 'Upload Submission' }}</span>
                     </button>
                 </div>
             </form>

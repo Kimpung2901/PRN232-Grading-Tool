@@ -1,6 +1,10 @@
 <div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent text-sm">
+    <!-- Page Header -->
     <div class="flex items-center justify-between border-b bg-white px-8 py-4 dark:bg-card">
-        <a [routerLink]="['/exams/data']" class="font-semibold text-gray-800 dark:text-white hover:text-primary transition">← Exams</a>
+        <a [routerLink]="['/exams/data']" class="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-primary transition">
+            <mat-icon svgIcon="heroicons_outline:arrow-left" class="!h-4 !w-4"></mat-icon>
+            Exams
+        </a>
         <div class="text-secondary flex items-center gap-1 uppercase tracking-widest text-[11px] font-bold">
             <span>Admin</span><span>•</span>
             <span class="text-primary">Grading Runner</span>
@@ -10,44 +14,61 @@
     <div class="mx-8 mt-8 mb-8 space-y-8">
         <!-- Status Dashboard -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-card relative overflow-hidden group">
-                <div class="flex items-center gap-4 relative z-10">
-                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center transition shadow-lg shrink-0" 
-                        [ngClass]="status.isRunning ? 'bg-emerald-500 text-white animate-pulse' : 'bg-gray-100 text-gray-400 dark:bg-gray-800'">
-                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <!-- Status Card -->
+            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-card">
+                <div class="flex items-center gap-4">
+                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center transition shadow-lg shrink-0"
+                        [ngClass]="status.isRunning ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-400 dark:bg-gray-800'">
+                        <mat-icon svgIcon="heroicons_outline:bolt" class="!h-8 !w-8"
+                            [class.animate-pulse]="status.isRunning"></mat-icon>
                     </div>
                     <div>
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">System Status</p>
-                        <h3 class="text-2xl font-black" [ngClass]="status.isRunning ? 'text-emerald-500' : 'text-gray-400'">{{ status.isRunning ? 'RUNNING' : 'IDLE' }}</h3>
+                        <h3 class="text-2xl font-black" [ngClass]="status.isRunning ? 'text-emerald-500' : 'text-gray-400'">
+                            {{ status.isRunning ? 'RUNNING' : 'IDLE' }}
+                        </h3>
                     </div>
                 </div>
                 <div class="mt-4 pt-4 border-t border-gray-50 dark:border-gray-800 flex justify-between items-center text-xs">
                     <span class="text-gray-400">PID: <span class="font-mono font-bold text-gray-900 dark:text-white">{{ status.processId || '—' }}</span></span>
-                    <span *ngIf="status.startedAtUtc" class="text-gray-400">Started: <span class="text-gray-600 dark:text-gray-300">{{ status.startedAtUtc | date:'HH:mm:ss' }}</span></span>
+                    <span *ngIf="status.startedAtUtc" class="text-gray-400">
+                        Started: <span class="text-gray-600 dark:text-gray-300">{{ status.startedAtUtc | date:'HH:mm:ss' }}</span>
+                    </span>
                 </div>
             </div>
 
             <!-- Start Controls -->
             <div class="md:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-card">
                 <div class="flex flex-col sm:flex-row gap-6 h-full items-center">
+                    <!-- Global Run -->
                     <div class="flex-1 w-full">
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Global Action</p>
-                        <button (click)="startGlobalRun()" [disabled]="status.isRunning || isProcessing"
-                            class="w-full h-14 rounded-2xl bg-indigo-600 text-white font-black uppercase tracking-wider text-sm shadow-indigo-200 shadow-lg hover:bg-indigo-700 transition active:scale-[0.98] disabled:opacity-50 disabled:grayscale">
+                        <button mat-flat-button color="primary"
+                            (click)="startGlobalRun()" [disabled]="status.isRunning || isProcessing"
+                            class="w-full !h-14 !rounded-2xl !text-base !font-black uppercase tracking-wider gap-2">
+                            <mat-spinner *ngIf="isProcessing" diameter="20"></mat-spinner>
+                            <mat-icon *ngIf="!isProcessing" svgIcon="heroicons_outline:play-circle" class="!h-5 !w-5"></mat-icon>
                             Start Pending Submissions
                         </button>
                     </div>
-                    <div class="h-full w-px bg-gray-100 dark:bg-gray-800 hidden sm:block"></div>
+
+                    <mat-divider vertical class="hidden sm:block h-16"></mat-divider>
+
+                    <!-- Exam-specific Run -->
                     <div class="flex-1 w-full">
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Target Exam</p>
                         <div class="flex gap-2">
-                            <select [(ngModel)]="selectedExamId" class="flex-1 h-14 rounded-2xl border-gray-100 bg-gray-50 px-4 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 transition dark:bg-gray-800 dark:border-gray-700">
-                                <option [ngValue]="null" disabled>Select Exam...</option>
-                                <option *ngFor="let exam of exams" [ngValue]="exam.examId">{{ exam.examName }}</option>
-                            </select>
-                            <button (click)="startExamRun()" [disabled]="!selectedExamId || status.isRunning || isProcessing"
-                                class="h-14 w-14 rounded-2xl bg-gray-900 text-white flex items-center justify-center hover:bg-black transition active:scale-95 disabled:opacity-30 disabled:grayscale">
-                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7-7 7"/></svg>
+                            <mat-form-field class="flex-1" appearance="outline" subscriptSizing="dynamic">
+                                <mat-label>Select Exam</mat-label>
+                                <mat-select [(ngModel)]="selectedExamId">
+                                    <mat-option [value]="null">— All / None —</mat-option>
+                                    <mat-option *ngFor="let exam of exams" [value]="exam.examId">{{ exam.examName }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <button mat-flat-button (click)="startExamRun()"
+                                [disabled]="!selectedExamId || status.isRunning || isProcessing"
+                                class="!h-14 !rounded-2xl !bg-gray-900 !text-white hover:!bg-black gap-1">
+                                <mat-icon svgIcon="heroicons_outline:arrow-right" class="!h-5 !w-5"></mat-icon>
                             </button>
                         </div>
                     </div>
@@ -55,52 +76,70 @@
             </div>
         </div>
 
-        <div *ngIf="errorMessage" class="rounded-2xl bg-red-50 border border-red-100 p-4 text-red-700 font-bold flex items-center gap-3 animate-shake">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            {{ errorMessage }}
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="rounded-2xl bg-red-50 border border-red-100 p-4 flex items-center gap-3 dark:bg-red-900/10 dark:border-red-900/30">
+            <mat-icon svgIcon="heroicons_outline:exclamation-triangle" class="!h-5 !w-5 text-red-600 dark:text-red-400"></mat-icon>
+            <span class="font-bold text-red-700 dark:text-red-400">{{ errorMessage }}</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-            <!-- Results Stream -->
+            <!-- Live Results Stream -->
             <div class="lg:col-span-3 rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card overflow-hidden">
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-gray-800">
-                    <h2 class="text-base font-black text-gray-900 dark:text-white uppercase tracking-tighter">Live Result Broadcast</h2>
-                    <button (click)="clearResults()" class="text-[10px] font-bold text-indigo-600 uppercase hover:text-indigo-800 transition">Clear List</button>
+                    <div class="flex items-center gap-2">
+                        <mat-icon svgIcon="heroicons_outline:signal" class="!h-5 !w-5 text-primary" [class.animate-pulse]="status.isRunning"></mat-icon>
+                        <h2 class="text-base font-black text-gray-900 dark:text-white uppercase tracking-tighter">Live Result Broadcast</h2>
+                        <span *ngIf="results.length > 0"
+                            class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono font-bold">
+                            {{ results.length }}
+                        </span>
+                    </div>
+                    <button mat-button (click)="clearResults()" class="!text-xs !font-bold !text-primary uppercase">Clear</button>
                 </div>
                 <div class="overflow-x-auto min-h-[400px]">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50/50 text-[10px] uppercase font-black tracking-widest text-gray-400 dark:bg-gray-800/50">
-                            <tr>
-                                <th class="px-6 py-3">Student / Group</th>
-                                <th class="px-6 py-3 text-center">Score</th>
-                                <th class="px-6 py-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-                            <tr *ngFor="let r of results" class="hover:bg-indigo-50/30 transition-all group animate-slide-in-top">
-                                <td class="px-6 py-4 font-bold text-gray-900 dark:text-white">{{ r.studentName }}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="text-lg font-black" [ngClass]="r.score && r.score >= 5 ? 'text-emerald-500' : 'text-rose-500'">{{ r.score }}</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-500">{{ r.status }}</span>
-                                </td>
-                            </tr>
-                            <tr *ngIf="results.length === 0">
-                                <td colspan="3" class="px-6 py-32 text-center text-gray-300">
-                                    <div class="flex flex-col items-center gap-4">
-                                        <svg class="h-16 w-16 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-                                        <p class="font-bold text-sm tracking-widest uppercase">Waiting for broadcast events</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                    <table mat-table [dataSource]="results" class="w-full">
+
+                        <!-- Student Column -->
+                        <ng-container matColumnDef="studentName">
+                            <th mat-header-cell *matHeaderCellDef class="!text-[10px] !font-black !uppercase !tracking-widest !text-gray-400">Student / Group</th>
+                            <td mat-cell *matCellDef="let r" class="font-bold text-gray-900 dark:text-white">{{ r.studentName }}</td>
+                        </ng-container>
+
+                        <!-- Score Column -->
+                        <ng-container matColumnDef="score">
+                            <th mat-header-cell *matHeaderCellDef class="!text-center !text-[10px] !font-black !uppercase !tracking-widest !text-gray-400">Score</th>
+                            <td mat-cell *matCellDef="let r" class="text-center">
+                                <span class="text-lg font-black" [ngClass]="r.score && r.score >= 5 ? 'text-emerald-500' : 'text-rose-500'">{{ r.score }}</span>
+                            </td>
+                        </ng-container>
+
+                        <!-- Status Column -->
+                        <ng-container matColumnDef="status">
+                            <th mat-header-cell *matHeaderCellDef class="!text-[10px] !font-black !uppercase !tracking-widest !text-gray-400">Status</th>
+                            <td mat-cell *matCellDef="let r">
+                                <span class="text-[10px] font-mono font-bold px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-500">{{ r.status }}</span>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50/50 dark:bg-gray-800/50"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                            class="hover:bg-indigo-50/30 transition-all animate-slide-in-top"></tr>
+
+                        <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" colspan="3">
+                                <div class="flex flex-col items-center gap-4 py-32 text-gray-300">
+                                    <mat-icon svgIcon="heroicons_outline:signal-slash" class="!h-16 !w-16 opacity-30"></mat-icon>
+                                    <p class="font-bold text-sm tracking-widest uppercase">Waiting for broadcast events</p>
+                                </div>
+                            </td>
+                        </tr>
                     </table>
                 </div>
             </div>
 
-            <!-- Execution Logs -->
+            <!-- Terminal + Stats -->
             <div class="lg:col-span-2 space-y-6 lg:sticky lg:top-8">
+                <!-- Terminal -->
                 <div class="rounded-2xl bg-[#0B0E14] shadow-2xl p-6 border border-gray-800 min-h-[400px] flex flex-col">
                     <div class="flex items-center gap-2 mb-4 border-b border-gray-800 pb-3">
                         <div class="flex gap-1.5">
@@ -110,10 +149,10 @@
                         </div>
                         <span class="ml-2 text-[10px] font-mono text-gray-500 tracking-tighter uppercase font-bold">Grading Terminal</span>
                     </div>
-                    <div class="flex-1 font-mono text-xs leading-relaxed overflow-auto scrollbar-thin scrollbar-thumb-gray-800">
+                    <div class="flex-1 font-mono text-xs leading-relaxed overflow-auto">
                         <div *ngIf="status.isRunning" class="text-indigo-400 mb-2">
                             <span class="text-white opacity-50">$</span> runner start --pid {{ status.processId }}<br/>
-                            <span class="text-emerald-500 animate-pulse">?? Processing submissions...</span>
+                            <span class="text-emerald-500 animate-pulse">⯌ Processing submissions...</span>
                         </div>
                         <div *ngIf="!status.isRunning && lastLog" [ngClass]="lastLog.status === 'ok' ? 'text-emerald-400' : 'text-rose-400'">
                             <span class="text-white opacity-50">$</span> runner exitCode --{{ status.lastExitCode }}<br/>
@@ -125,16 +164,26 @@
                     </div>
                 </div>
 
+                <!-- Last Run Stats -->
                 <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-card">
                     <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Last Run Stats</h3>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-gray-500">Completed At</span>
-                            <span class="font-bold text-gray-900 dark:text-white">{{ status.lastCompletedAtUtc ? (status.lastCompletedAtUtc | date:'MMM d, HH:mm:ss') : 'N/A' }}</span>
+                            <span class="font-bold text-gray-900 dark:text-white">
+                                {{ status.lastCompletedAtUtc ? (status.lastCompletedAtUtc | date:'MMM d, HH:mm:ss') : 'N/A' }}
+                            </span>
                         </div>
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-gray-500">Exit Code</span>
-                            <span class="font-bold px-2 py-0.5 rounded" [ngClass]="status.lastExitCode === 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">{{ status.lastExitCode ?? 'N/A' }}</span>
+                            <span class="font-bold px-2 py-0.5 rounded"
+                                [ngClass]="status.lastExitCode === 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">
+                                {{ status.lastExitCode ?? 'N/A' }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-500">Last Error</span>
+                            <span class="font-mono text-xs text-rose-500 truncate max-w-36">{{ status.lastError || '—' }}</span>
                         </div>
                     </div>
                 </div>
@@ -150,13 +199,5 @@
 }
 .animate-slide-in-top {
     animation: slide-in-top 0.4s ease-out;
-}
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-    20%, 40%, 60%, 80% { transform: translateX(2px); }
-}
-.animate-shake {
-    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 </style>

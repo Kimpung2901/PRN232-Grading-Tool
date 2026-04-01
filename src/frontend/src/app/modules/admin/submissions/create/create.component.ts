@@ -6,14 +6,22 @@ import { ExamsService } from '../../../../services/exams.service';
 import { SubmissionsService } from '../../../../services/submissions.service';
 import { ExamDto } from '../../../../api/models';
 
+// Angular Material
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
 @Component({
     selector: 'app-submissions-create',
     standalone: true,
     imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        RouterModule
+        CommonModule, FormsModule, ReactiveFormsModule, RouterModule,
+        MatFormFieldModule, MatInputModule, MatSelectModule,
+        MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatSnackBarModule
     ],
     templateUrl: './create.component.html'
 })
@@ -24,13 +32,14 @@ export class CreateComponent implements OnInit {
     isSubmitting = false;
     isLoadingExams = false;
     exams: ExamDto[] = [];
-    
+
     constructor(
         private fb: FormBuilder,
         private router: Router,
         private route: ActivatedRoute,
         private examsService: ExamsService,
-        private submissionsService: SubmissionsService
+        private submissionsService: SubmissionsService,
+        private snackBar: MatSnackBar
     ) {
         this.form = this.fb.group({
             studentName: ['', [Validators.required, Validators.minLength(2)]],
@@ -55,9 +64,9 @@ export class CreateComponent implements OnInit {
                 this.exams = res.items || [];
                 this.isLoadingExams = false;
             },
-            error: (err) => {
+            error: () => {
                 this.isLoadingExams = false;
-                console.error('Failed to load exams', err);
+                this.snackBar.open('Failed to load exams.', 'Dismiss', { duration: 4000, panelClass: ['snack-error'] });
             }
         });
     }
@@ -93,7 +102,9 @@ export class CreateComponent implements OnInit {
         if (validExtensions.some(ext => fileName.endsWith(ext))) {
             this.selectedFile = file;
         } else {
-            alert('Please select a valid archive file (.zip, .rar, .7z)');
+            this.snackBar.open('Please select a valid archive file (.zip, .rar, .7z)', 'Dismiss', {
+                duration: 3000, panelClass: ['snack-error']
+            });
         }
     }
 
@@ -110,31 +121,35 @@ export class CreateComponent implements OnInit {
     }
 
     onSubmit(): void {
-        if (this.form.valid && this.selectedFile) {
-            this.isSubmitting = true;
-            const val = this.form.value;
-            this.submissionsService.createSubmission({
-                examId: parseInt(val.examId, 10),
-                body: {
-                    StudentName: val.studentName,
-                    StudentCode: val.studentCode,
-                    File: this.selectedFile
-                }
-            }).subscribe({
-                next: () => {
-                    this.isSubmitting = false;
-                    this.router.navigate(['/submissions'], { queryParams: { examId: val.examId } });
-                },
-                error: (err) => {
-                    this.isSubmitting = false;
-                    console.error('Submission failed', err);
-                }
-            });
-        } else if (!this.selectedFile) {
-            alert('Please upload a project archive file.');
-        } else {
+        if (this.form.invalid) {
             this.form.markAllAsTouched();
+            return;
         }
+        if (!this.selectedFile) {
+            this.snackBar.open('Please upload a project archive file.', 'Dismiss', { duration: 3000, panelClass: ['snack-error'] });
+            return;
+        }
+        this.isSubmitting = true;
+        const val = this.form.value;
+        this.submissionsService.createSubmission({
+            examId: parseInt(val.examId, 10),
+            body: {
+                StudentName: val.studentName,
+                StudentCode: val.studentCode,
+                File: this.selectedFile
+            }
+        }).subscribe({
+            next: (sub) => {
+                this.isSubmitting = false;
+                this.snackBar.open('Submission uploaded successfully!', 'View', { duration: 3000, panelClass: ['snack-success'] });
+                this.router.navigate(['/submissions/data', sub.id]);
+            },
+            error: (err) => {
+                this.isSubmitting = false;
+                const msg = err?.error?.detail || 'Failed to upload submission. Please try again.';
+                this.snackBar.open(msg, 'Dismiss', { duration: 5000, panelClass: ['snack-error'] });
+            }
+        });
     }
 
     onCancel(): void {

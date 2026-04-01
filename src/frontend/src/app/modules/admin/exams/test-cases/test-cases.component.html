@@ -1,71 +1,96 @@
 <div class="flex min-h-full w-full flex-col bg-[#F1F5F9] dark:bg-transparent">
+    <!-- Page Header -->
     <div class="flex items-center justify-between border-b bg-white px-8 py-4 text-sm dark:bg-card">
-        <a [routerLink]="['/exams/data', examId]" class="font-semibold text-gray-800 dark:text-white hover:text-primary transition">← Exam Detail</a>
+        <a [routerLink]="['/exams/data', examId]" class="flex items-center gap-2 font-semibold text-gray-800 dark:text-white hover:text-primary transition">
+            <mat-icon svgIcon="heroicons_outline:arrow-left" class="!h-4 !w-4"></mat-icon>
+            Exam Detail
+        </a>
         <div class="text-secondary flex items-center gap-1">
             <span>Exams</span><span>•</span>
             <span class="font-semibold text-primary">Test Cases</span>
         </div>
     </div>
 
-    <div class="mx-8 mb-6 mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card">
+    <div class="mx-8 mb-6 mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-card overflow-hidden">
+        <!-- Card Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-700">
             <div>
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white">Test Cases</h1>
                 <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Upload and manage test case collections for Exam #{{ examId }}.</p>
             </div>
-            <button (click)="tcFileInput.click()" [disabled]="isProcessing"
-                class="mt-4 sm:mt-0 flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6H16a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                Upload Test Case
-            </button>
-            <input #tcFileInput type="file" class="hidden" (change)="onFileUpload($event)"/>
+            <div class="mt-4 sm:mt-0">
+                <button mat-flat-button color="primary" (click)="tcFileInput.click()" [disabled]="isProcessing" class="!rounded-xl gap-2">
+                    <mat-spinner *ngIf="isProcessing" diameter="16"></mat-spinner>
+                    <mat-icon *ngIf="!isProcessing" svgIcon="heroicons_outline:cloud-arrow-up" class="!h-4 !w-4"></mat-icon>
+                    Upload Test Case
+                </button>
+                <input #tcFileInput type="file" class="hidden" (change)="onFileUpload($event)"/>
+            </div>
         </div>
 
+        <!-- Loading -->
         <div *ngIf="isLoading" class="flex items-center justify-center py-16">
-            <svg class="animate-spin h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <mat-spinner diameter="40"></mat-spinner>
         </div>
 
+        <!-- Table -->
         <div *ngIf="!isLoading" class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                    <tr>
-                        <th class="px-6 py-4 font-medium">ID</th>
-                        <th class="px-6 py-4 font-medium w-full">File Path</th>
-                        <th class="px-6 py-4 font-medium text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                    <tr *ngFor="let tc of testCases" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-                        <td class="px-6 py-4 font-mono text-xs text-gray-500 dark:text-gray-400">{{ tc.id }}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <div class="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
-                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                </div>
-                                <span class="font-mono text-xs text-gray-700 dark:text-gray-300 truncate max-w-sm">{{ tc.filePath || 'No path' }}</span>
+            <table mat-table [dataSource]="testCases" class="w-full">
+
+                <!-- ID Column -->
+                <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef class="!w-20 !text-xs !font-bold !uppercase !tracking-wider !text-gray-500">ID</th>
+                    <td mat-cell *matCellDef="let tc" class="font-mono text-xs text-gray-400">{{ tc.id }}</td>
+                </ng-container>
+
+                <!-- File Path Column -->
+                <ng-container matColumnDef="filePath">
+                    <th mat-header-cell *matHeaderCellDef class="!text-xs !font-bold !uppercase !tracking-wider !text-gray-500">File</th>
+                    <td mat-cell *matCellDef="let tc">
+                        <div class="flex items-center gap-2">
+                            <div class="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
+                                <mat-icon svgIcon="heroicons_outline:document-text" class="!h-4 !w-4"></mat-icon>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <button (click)="deleteTestCase(tc.id)" [disabled]="isProcessing"
-                                class="opacity-0 group-hover:opacity-100 transition rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 disabled:opacity-50">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                    <tr *ngIf="testCases.length === 0">
-                        <td colspan="3" class="px-6 py-16 text-center">
-                            <div class="flex flex-col items-center gap-3 text-gray-400">
-                                <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                                <p class="font-semibold text-gray-600 dark:text-gray-300">No test cases uploaded</p>
-                                <p class="text-sm">Upload a test case file to get started.</p>
+                            <div>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 text-sm">{{ getFileBasename(tc.filePath) }}</p>
+                                <p class="font-mono text-xs text-gray-400 truncate max-w-sm">{{ tc.filePath }}</p>
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="!text-right !text-xs !font-bold !uppercase !tracking-wider !text-gray-500">Actions</th>
+                    <td mat-cell *matCellDef="let tc" class="text-right">
+                        <button mat-icon-button color="warn" (click)="deleteTestCase(tc.id, tc.filePath)" [disabled]="isProcessing"
+                            matTooltip="Delete test case"
+                            class="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <mat-icon svgIcon="heroicons_outline:trash" class="!h-4 !w-4"></mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50 dark:bg-gray-800"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                    class="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition-colors group">
+                </tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="3">
+                        <div class="flex flex-col items-center gap-3 py-16 text-gray-400">
+                            <mat-icon svgIcon="heroicons_outline:clipboard-document-list" class="!h-12 !w-12 opacity-30"></mat-icon>
+                            <p class="font-semibold text-gray-600 dark:text-gray-300">No test cases uploaded</p>
+                            <p class="text-sm">Upload a test case file to get started.</p>
+                        </div>
+                    </td>
+                </tr>
             </table>
         </div>
 
-        <div class="border-t border-gray-100 px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 dark:border-gray-700 rounded-b-2xl text-sm text-gray-500">
+        <!-- Footer -->
+        <div class="border-t border-gray-100 px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 dark:border-gray-700 rounded-b-2xl text-sm text-gray-500 flex items-center gap-2">
+            <mat-icon svgIcon="heroicons_outline:document-text" class="!h-4 !w-4 text-gray-400"></mat-icon>
             {{ testCases.length }} test case(s)
         </div>
     </div>

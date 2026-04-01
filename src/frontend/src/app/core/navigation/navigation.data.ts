@@ -29,14 +29,22 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:academic-cap',
                 link: '/exams/data',
-                exactMatch: false
+                exactMatch: true
             },
             {
                 id: 'exams.create',
                 title: 'Create Exam',
                 type: 'basic',
                 icon: 'heroicons_outline:plus-circle',
-                link: '/exams/create',
+                link: '/exams/data/create',
+                exactMatch: true
+            },
+            {
+                id: 'exams.runner',
+                title: 'Grading Runner',
+                type: 'basic',
+                icon: 'heroicons_outline:command-line',
+                link: '/exams/data/runner',
                 exactMatch: true
             },
         ],
@@ -53,14 +61,14 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'heroicons_outline:cloud-arrow-up',
                 link: '/submissions/data',
-                exactMatch: false
+                exactMatch: true
             },
             {
                 id: 'submissions.create',
                 title: 'Create Submission',
                 type: 'basic',
                 icon: 'heroicons_outline:plus-circle',
-                link: '/submissions/create',
+                link: '/submissions/data/create',
                 exactMatch: true
             },
         ],

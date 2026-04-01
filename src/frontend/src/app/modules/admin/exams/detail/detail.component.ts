@@ -6,10 +6,13 @@ import { SubmissionsService } from '../../../../services/submissions.service';
 import { TestResultsService } from '../../../../services/test-results.service';
 import { ExamDto, SubmissionReportDto } from '../../../../api/models';
 
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { EditExamDialogComponent } from './edit-exam-dialog/edit-exam-dialog.component';
+
 @Component({
     selector: 'app-exams-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, MatDialogModule],
     templateUrl: './detail.component.html',
 })
 export class DetailComponent implements OnInit {
@@ -24,7 +27,8 @@ export class DetailComponent implements OnInit {
         private examsService: ExamsService,
         private submissionsService: SubmissionsService,
         private testResultsService: TestResultsService,
-        private router: Router
+        private router: Router,
+        private _matDialog: MatDialog
     ) {
         this.id = this.route.snapshot.paramMap.get('id') ?? '';
     }
@@ -86,13 +90,14 @@ export class DetailComponent implements OnInit {
     }
 
     editExam(): void {
-        const newName = prompt('Enter new exam name:', this.detail?.examName ?? '');
-        if (newName && newName !== this.detail?.examName) {
-            const examIdNum = parseInt(this.id, 10);
-            this.examsService.updateExam({ examId: examIdNum, body: { ExamName: newName } }).subscribe({
-                next: (res) => this.detail = res,
-                error: (err) => console.error('Error updating exam', err)
-            });
-        }
+        const dialogRef = this._matDialog.open(EditExamDialogComponent, {
+            data: { exam: this.detail }
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.detail = result;
+            }
+        });
     }
 }

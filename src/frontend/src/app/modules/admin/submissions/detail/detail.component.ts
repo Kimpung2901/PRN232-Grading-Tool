@@ -5,10 +5,13 @@ import { SubmissionsService } from '../../../../services/submissions.service';
 import { ExamsService } from '../../../../services/exams.service';
 import { SubmissionDto, ExamDto } from '../../../../api/models';
 
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { EditSubmissionDialogComponent } from './edit-submission-dialog/edit-submission-dialog.component';
+
 @Component({
     selector: 'app-submissions-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, MatDialogModule],
     templateUrl: './detail.component.html'
 })
 export class DetailComponent implements OnInit {
@@ -22,7 +25,8 @@ export class DetailComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private submissionsService: SubmissionsService,
-        private examsService: ExamsService
+        private examsService: ExamsService,
+        private _matDialog: MatDialog
     ) {
         const idParam = this.route.snapshot.paramMap.get('id');
         this.submissionId = idParam ? parseInt(idParam, 10) : 0;
@@ -87,6 +91,18 @@ export class DetailComponent implements OnInit {
             error: (err) => {
                 this.isProcessing = false;
                 console.error('Requeue failed', err);
+            }
+        });
+    }
+
+    editSubmission(): void {
+        const dialogRef = this._matDialog.open(EditSubmissionDialogComponent, {
+            data: { submission: this.submission }
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                this.submission = result;
             }
         });
     }

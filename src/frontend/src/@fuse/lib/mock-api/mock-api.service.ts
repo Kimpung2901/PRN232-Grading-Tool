@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { FuseMockApiHandler } from '@fuse/lib/mock-api/mock-api.request-handler';
 import { FuseMockApiMethods } from '@fuse/lib/mock-api/mock-api.types';
-import { compact, fromPairs } from 'lodash-es';
+import { compact } from 'lodash-es';
 
 @Injectable({ providedIn: 'root' })
 export class FuseMockApiService {
@@ -77,7 +77,7 @@ export class FuseMockApiService {
                 matchingHandler.handler = handler;
 
                 // Extract and assign the parameters
-                matchingHandler.urlParams = fromPairs(
+                matchingHandler.urlParams = Object.fromEntries(
                     compact(
                         handlerUrlParts.map((handlerUrlPart, index) =>
                             handlerUrlPart.startsWith(':')

@@ -1,7 +1,6 @@
 import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { Injectable, inject } from '@angular/core';
 import { FuseConfigService } from '@fuse/services/config';
-import { fromPairs } from 'lodash-es';
 import { Observable, ReplaySubject, map, switchMap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -23,7 +22,7 @@ export class FuseMediaWatcherService {
         this._fuseConfigService.config$
             .pipe(
                 map((config) =>
-                    fromPairs(
+                    Object.fromEntries(
                         Object.entries(config.screens).map(
                             ([alias, screen]) => [
                                 alias,

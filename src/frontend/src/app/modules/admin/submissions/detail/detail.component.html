@@ -22,9 +22,16 @@
                         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ submission.studentName }}</h1>
                         <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">{{ submission.studentCode }}</p>
                     </div>
-                    <div class="flex items-center gap-2 rounded-full px-3 py-1.5 font-semibold" [ngClass]="getStatusClass()">
-                        <div class="h-2 w-2 rounded-full" [ngClass]="submission.status === 3 ? 'bg-emerald-500' : (submission.status === 4 ? 'bg-red-500' : 'bg-gray-400')"></div>
-                        {{ getStatusLabel() }}
+                    <div class="flex items-center gap-3">
+                        <button (click)="editSubmission()" [disabled]="isProcessing"
+                            class="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition disabled:opacity-50">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            Edit
+                        </button>
+                        <div class="flex items-center gap-2 rounded-full px-3 py-1.5 font-semibold" [ngClass]="getStatusClass()">
+                            <div class="h-2 w-2 rounded-full" [ngClass]="submission.status === 3 ? 'bg-emerald-500' : (submission.status === 4 ? 'bg-red-500' : 'bg-gray-400')"></div>
+                            {{ getStatusLabel() }}
+                        </div>
                     </div>
                 </div>
 
